@@ -1,0 +1,17 @@
+{
+  "name": "field_admin_selenium",
+  "version": "1.0.0",
+  "main": "main.js",
+  "scripts": {
+    "start": "mocha --recursive --timeout 1000000 main.js"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "chromedriver": "^83.0.0",
+    "dotenv": "^8.2.0",
+    "selenium-webdriver": "^4.0.0-alpha.7"
+  },
+  "devDependencies": {
+    "mocha": "^7.2.0"
+  }
+}
