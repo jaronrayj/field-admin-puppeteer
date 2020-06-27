@@ -7,10 +7,12 @@ This will run with Canvas apis and selenium to create users in Canvas, or add a 
 ### Clone and Install
 Move to directory location of choice and:
 ```
-git clone git@github.com:jaronrayj/field-admin-selenium.git
-npm install
+$ git clone git@github.com:jaronrayj/field-admin-selenium.git
+$ npm install
+```
 or
-yarn install
+```
+$ yarn install
 ```
 #### .env file setup
 Create a file at the root level named ".env". add the capitalized words and ='s and add in your information.
