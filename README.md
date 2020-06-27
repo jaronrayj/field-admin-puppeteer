@@ -51,6 +51,7 @@ Move to main directory
 ```
 npm start
 ```
+or
 ```
 yarn start
 ```

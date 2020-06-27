@@ -1,8 +1,12 @@
 require('dotenv').config()
 require('chromedriver');
 
+
 const axios = require('axios');
 const fs = require('fs');
+const createUser = require('./js/createUser');
+const createLogin = require('./js/createLogin');
+const removeLogins = require('./js/removeLogins');
 const parseJson = require('parse-json');
 const jsonLocation = fs.readdirSync('./csv-pull');
 const { Builder, Key, By, until } = require('selenium-webdriver');
@@ -16,136 +20,65 @@ const oktausername = process.env.OKTALOGIN
 const oktapassword = process.env.OKTAPASSWORD
 const token = process.env.TOKEN
 // todo randomize this and store it for each user
-const uniquePassword = 'superuniquepassword';
 
 // Have this change based off of file imported
-let canvasDomain = 'https://jjohnson.instructure.com/api/v1';
-let userEmail = 'example@example.com'
-let sfAccountId = '001A000001FmoXJIAZ'
-let account_admin = true;
-let field_admin = false;
-let fullName = 'Field Admin';
+const csv = [{
+    canvasDomain: 'jjohnson.instructure.com',
+    email: 'example@example.com',
+    sfAccountId: '001A000001FmoXJIAZ',
+    account_admin: true,
+    field_admin: false,
+    fullName: 'Field Admin',
+}];
+
 
 // Changing variables
 const toBeDeletedLogins = [];
 const logins = [];
 
-// api creds setup
-const instance = axios.create({
-    baseURL: canvasDomain,
-    headers: { 'Authorization': `Bearer ${token}` }
-});
 
 // Run main process here
 describe('Check Canvas accounts and create', function () {
+    csv.forEach(row => {
+        // api creds setup
+        const instance = axios.create({
+            baseURL: `https://${row.canvasDomain}/api/v1`,
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
 
-    instance.get(`/accounts/self/users?search_term=${userEmail}`)
-        .then(response => {
-            if (response.data.length === 0) {
-                createUser(userEmail);
-            } else {
-                // Create a login that will be deleted later
-                createLoginOnly(response.data, userEmail, response.data[0].id);
-            }
-            console.log("Logins", logins);
-        })
+        instance.get(`/accounts/self/users?search_term=${row.email}&include[]=email`)
+            .then( response => {
+                if (response.data.length === 0) {
+                    row.created = createUser(row, instance);
+                } else {
+                    for (let i = 0; i < response.data.length; i++) {
+                        const user = response.data[i];
+                        if (user.email === row.email) {
+                            // Create a login that will be deleted later
+                            // todo tripping over itself, not waiting for this to finalize before moving on.
+                            let newLogin =  createLogin(response.data, row, instance);
+                            toBeDeletedLogins.push(newLogin);
+                            row.created = newLogin;
+                        }
+                    }
+                }
+            })
 
-    // todo make sure the logins get put together before proceeding with next steps
-
-    if (field_admin) {
-        console.log("Finished admin/login creation, working field admins now");
-
-        fieldAdminSetup(logins)
-
-    }
+        // todo make sure the logins get put together before proceeding with next steps
+        if (row.field_admin) {
+            console.log("Finished admin/login creation, working field admin now");
+            fieldAdminSetup(logins)
+        }
+    })
+    setTimeout(() => {
+        removeLogins(toBeDeletedLogins, token);
+    }, 5000);
 
 })
 
 
-
-function createUser(email) {
-    let username
-    if (!fullName) {
-        username = email
-    } else {
-        username = fullName
-    }
-    let params = {
-        user: {
-            name: username,
-            skip_registration: true,
-        },
-        communication_channel: {
-            address: email
-        },
-        pseudonym: {
-            send_confirmation: true,
-            unique_id: email,
-            password: uniquePassword
-        }
-    };
-    instance.post(`accounts/self/users`, params)
-        .then(function (response) {
-            console.log(`${username} created`);
-            if (account_admin) {
-                setupAdmin(response.data.id)
-            }
-            logins.push(response.data)
-        })
-        .catch(function (error) {
-            console.log(error);
-        });
-}
-
-function createLoginOnly(data, email, id) {
-    if (data.length = 1) {
-        instance.post(`/accounts/self/logins`, {
-            user: {
-                id: id,
-            },
-            login: {
-                unique_id: 'fieldadminsetup400',
-                password: uniquePassword
-            }
-        }).then(function (response) {
-            console.log(`${email} exists, created login`);
-            response.data.domain = canvasDomain;
-            toBeDeletedLogins.push(response.data);
-            logins.push(response.data);
-            if (account_admin) {
-                setupAdmin(response.data.user_id)
-            }
-        })
-            .catch(function (error) {
-                console.log(error);
-            });
-    } else {
-    }
-}
-
-function setupAdmin(id) {
-    instance.post(`/accounts/self/admins`, {
-        user_id: id
-    }).then(
-        console.log("Set up as admin")
-    ).catch(err => console.log(err));
-}
-
-function removeLogins(arr) {
-    arr.forEach(login => {
-        axios({
-            method: `delete`,
-            url: `${login.domain}/users/${login.user_id}/logins/${login.id}`,
-            headers: { 'Authorization': `Bearer ${token}` }
-        })
-            .then(console.log(`Login for ${login.unique_id} deleted`))
-            .catch(err => console.log(err));
-    });
-}
-
-
 // Set up as Field Admin
-function fieldAdminSetup() {
+function fieldAdminSetup(cb) {
 
     describe('Login and pull Cases ID', function () {
         let driver;
@@ -158,10 +91,10 @@ function fieldAdminSetup() {
             await driver.get('');
         });
     });
-
+    cb();
 }
 
-
+//  SF startup
 //     it('Pull up Salesforce ', async function () {
 //         await driver.get('https://instructure.lightning.force.com/lightning/page/home');
 //         await driver.wait(until.elementLocated(By.id('idp_hint_section')), 100000);
@@ -193,7 +126,3 @@ function fieldAdminSetup() {
 
 // selenium setup
 // //   after(() => driver && driver.quit());
-
-setTimeout(() => {
-    removeLogins(toBeDeletedLogins);
-}, 3000);
