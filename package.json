@@ -11,6 +11,7 @@
     "chromedriver": "^83.0.0",
     "dotenv": "^8.2.0",
     "jsforce": "^1.9.3",
+    "parse-json": "^5.0.0",
     "selenium-webdriver": "^4.0.0-alpha.7"
   },
   "devDependencies": {
