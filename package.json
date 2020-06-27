@@ -8,6 +8,7 @@
   "license": "MIT",
   "dependencies": {
     "axios": "^0.19.2",
+    "axios-throttle": "^1.0.2",
     "chromedriver": "^83.0.0",
     "dotenv": "^8.2.0",
     "jsforce": "^1.9.3",

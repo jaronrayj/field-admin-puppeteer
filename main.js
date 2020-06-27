@@ -1,11 +1,15 @@
 require('dotenv').config()
 require('chromedriver');
+
 const axios = require('axios');
 const fs = require('fs');
 const parseJson = require('parse-json');
 const jsonLocation = fs.readdirSync('./csv-pull');
 const { Builder, Key, By, until } = require('selenium-webdriver');
 const { domain } = require('process');
+const axiosThrottle = require('axios-throttle');
+//pass axios object and value of the delay between requests in ms
+axiosThrottle.init(axios, 200)
 
 // Variables
 const oktausername = process.env.OKTALOGIN
@@ -19,6 +23,7 @@ let canvasDomain = 'https://jjohnson.instructure.com/api/v1';
 let userEmail = 'example@example.com'
 let sfAccountId = '001A000001FmoXJIAZ'
 let account_admin = true;
+let field_admin = false;
 let fullName = 'Field Admin';
 
 // TODO variables - set up as field admin
@@ -31,12 +36,11 @@ const logins = [];
 // api creds setup
 const instance = axios.create({
     baseURL: canvasDomain,
-    timeout: 30000,
     headers: { 'Authorization': `Bearer ${token}` }
 });
 
-
-describe('Check Canvas accounts and create', function () {
+// Run main process here
+describe('Check Canvas accounts and create', async function () {
 
     instance.get(`/accounts/self/users?search_term=${userEmail}`)
         .then(response => {
@@ -46,8 +50,19 @@ describe('Check Canvas accounts and create', function () {
                 // Create a login that will be deleted later
                 createLoginOnly(response.data, userEmail, response.data[0].id);
             }
+            console.log("Logins", logins);
         })
+
+    if (field_admin) {
+        console.log("Finished admin/login creation, working field admins now");
+        
+        await fieldAdminSetup(logins)
+    
+    }
+
 })
+
+
 
 function createUser(email) {
     let username
@@ -96,7 +111,8 @@ function createLoginOnly(data, email, id) {
         }).then(function (response) {
             console.log(`${email} exists, created login`);
             response.data.domain = canvasDomain;
-            toBeDeletedLogins.push(response.data)
+            toBeDeletedLogins.push(response.data);
+            logins.push(response.data);
             if (account_admin) {
                 setupAdmin(response.data.user_id)
             }
@@ -129,18 +145,23 @@ function removeLogins(arr) {
 }
 
 
+// Set up as Field Admin
+function fieldAdminSetup() {
 
-// describe('Login and pull Cases ID', function () {
-//     let driver;
+    describe('Login and pull Cases ID', function () {
+        let driver;
 
-//     before(async function () {
-//         driver = await new Builder().forBrowser('chrome').build();
-//     });
+        before(async function () {
+            driver = await new Builder().forBrowser('chrome').build();
+        });
 
-//     it('Pull up Salesforce ', async function () {
-//         await driver.get('');
-//     });
-// });
+        it('Pull up Salesforce ', async function () {
+            await driver.get('');
+        });
+    });
+
+}
+
 
 //     it('Pull up Salesforce ', async function () {
 //         await driver.get('https://instructure.lightning.force.com/lightning/page/home');
