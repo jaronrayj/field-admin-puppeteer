@@ -1,12 +1,17 @@
 # field-admin-selenium
 
-## .env file setup
+This will run with Canvas apis and selenium to create users in Canvas, or add a login to their account and go through the field admin adding process. Your Salesforce token needs to be allowed to set up field admins for this to function.
+
+## Prereqs
+### .env file setup
+
+Create a file at the root level named ".env". add the capitalized words and ='s and add in your information.
 
 * OKTALOGIN=oktausername
 * OKTAPASSWORD=oktapassword
 * TOKEN=CanvasToken(no Bearer)
 
-## CSV file structure (in no specific order)
+### CSV file structure (in no specific order)
 
 Required fields -
 * email - User email
