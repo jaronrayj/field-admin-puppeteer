@@ -1,12 +1,12 @@
 # field-admin-selenium
 
-.env file setup
+## .env file setup
 
 * OKTALOGIN=oktausername
 * OKTAPASSWORD=oktapassword
 * TOKEN=CanvasToken(no Bearer)
 
-csv file structure (in no specific order)
+## CSV file structure (in no specific order)
 
 Required fields -
 * email - User email
