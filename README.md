@@ -46,3 +46,11 @@ example@example.com,domain.instructure.com,Jaron Johnson,jjohnson,001A000001FmoX
 example2@example.com,domain.instructure.com,Not Jaron,,001A000001FmoXJIAZ,FALSE,TRUE
 example3@example.com,domain.instructure.com,,jokes,001A000001FmoXJIAZ,TRUE,FALSE
 ```
+### To run
+Move to main directory
+```
+npm start
+```
+```
+yarn start
+```

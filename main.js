@@ -26,9 +26,6 @@ let account_admin = true;
 let field_admin = false;
 let fullName = 'Field Admin';
 
-// TODO variables - set up as field admin
-
-
 // Changing variables
 const toBeDeletedLogins = [];
 const logins = [];
@@ -40,7 +37,7 @@ const instance = axios.create({
 });
 
 // Run main process here
-describe('Check Canvas accounts and create', async function () {
+describe('Check Canvas accounts and create', function () {
 
     instance.get(`/accounts/self/users?search_term=${userEmail}`)
         .then(response => {
@@ -53,11 +50,13 @@ describe('Check Canvas accounts and create', async function () {
             console.log("Logins", logins);
         })
 
+    // todo make sure the logins get put together before proceeding with next steps
+
     if (field_admin) {
         console.log("Finished admin/login creation, working field admins now");
-        
-        await fieldAdminSetup(logins)
-    
+
+        fieldAdminSetup(logins)
+
     }
 
 })
