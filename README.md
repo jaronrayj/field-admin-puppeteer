@@ -8,6 +8,8 @@ This will run with Canvas apis and selenium to create users in Canvas, or add a 
 Move to directory location of choice and:
 ```
 $ git clone git@github.com:jaronrayj/field-admin-selenium.git
+```
+```
 $ npm install
 ```
 or
