@@ -12,6 +12,7 @@ const jsonLocation = fs.readdirSync('./csv-pull');
 const { Builder, Key, By, until } = require('selenium-webdriver');
 const { domain } = require('process');
 const axiosThrottle = require('axios-throttle');
+const canvasSignIn = require('./js/canvasSignIn');
 //pass axios object and value of the delay between requests in ms
 axiosThrottle.init(axios, 200)
 
@@ -41,58 +42,44 @@ const logins = [];
 describe('Check Canvas accounts and create', function () {
     csv.forEach(row => {
         // api creds setup
-        const instance = axios.create({
+        instance = axios.create({
             baseURL: `https://${row.canvasDomain}/api/v1`,
             headers: { 'Authorization': `Bearer ${token}` }
         });
 
         instance.get(`/accounts/self/users?search_term=${row.email}&include[]=email`)
-            .then( response => {
+            .then(response => {
                 if (response.data.length === 0) {
-                    row.created = createUser(row, instance);
+                    // Create user with specified information
+                    createUser(row, instance, canvasSignIn);
+                } else if (!row.field_admin) {
+                    console.log(`${row.email} exists, not creating as field admin`);
                 } else {
                     for (let i = 0; i < response.data.length; i++) {
                         const user = response.data[i];
-                        if (user.email === row.email) {
+                        if (response.length = 1 && user.email === row.email) {
                             // Create a login that will be deleted later
-                            // todo tripping over itself, not waiting for this to finalize before moving on.
-                            let newLogin =  createLogin(response.data, row, instance);
-                            toBeDeletedLogins.push(newLogin);
-                            row.created = newLogin;
+                            let num = 400;
+                            let uniqueLogin = `fieldadminsetup${num}`
+
+                            num += 1;
+                            createLogin(response.data, row, instance, canvasSignIn);
+                        } else {
+                            console.log(`Could not verify correct user for ${row.email}`);
                         }
                     }
                 }
             })
-
-        // todo make sure the logins get put together before proceeding with next steps
-        if (row.field_admin) {
-            console.log("Finished admin/login creation, working field admin now");
-            fieldAdminSetup(logins)
-        }
     })
-    setTimeout(() => {
-        removeLogins(toBeDeletedLogins, token);
-    }, 5000);
+    // console.log("Finished admin/login creation, working field admin now");
+    // fieldAdminSetup(logins)
+
 
 })
 
 
 // Set up as Field Admin
-function fieldAdminSetup(cb) {
 
-    describe('Login and pull Cases ID', function () {
-        let driver;
-
-        before(async function () {
-            driver = await new Builder().forBrowser('chrome').build();
-        });
-
-        it('Pull up Salesforce ', async function () {
-            await driver.get('');
-        });
-    });
-    cb();
-}
 
 //  SF startup
 //     it('Pull up Salesforce ', async function () {

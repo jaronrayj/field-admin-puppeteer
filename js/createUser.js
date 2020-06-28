@@ -2,7 +2,7 @@ const randomString = require('../util/randomString');
 const setupAdmin = require('../js/setupAdmin');
 
 module.exports = 
-function createUser(row, instance) {
+function createUser(row, instance, fieldAdminSetup) {
     let username;
     let unique_id;
     let password = randomString();
@@ -37,7 +37,12 @@ function createUser(row, instance) {
                 setupAdmin(response.data.id, instance)
             }
             response.data.password = password;
-            return response.data;
+            row.loginInfo = response.data;
+            if (!row.field_admin) {
+                console.log(`Not creating as field admin`);
+            } else {
+                fieldAdminSetup(row, instance);
+            }
         })
         .catch(function (error) {
             console.log(error);
