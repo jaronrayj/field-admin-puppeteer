@@ -19,7 +19,6 @@ axiosThrottle.init(axios, 200)
 const oktausername = process.env.OKTALOGIN
 const oktapassword = process.env.OKTAPASSWORD
 const token = process.env.TOKEN
-// todo randomize this and store it for each user
 
 // Have this change based off of file imported
 const csv = [{

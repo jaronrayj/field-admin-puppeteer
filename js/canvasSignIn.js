@@ -1,9 +1,9 @@
 const removeLogins = require("./removeLogins");
 
 module.exports = 
-function canvasSignIn(logins, instance, cb) {
-    console.log("canvasSignIn -> logins", logins);
-    // removeLogins(logins, instance);
+function canvasSignIn(user, instance, cb) {
+    console.log("canvasSignIn -> user", user);
+    removeLogins(user, instance);
     return console.log("made it");
     describe('Login and pull Cases ID', function () {
         let driver;
@@ -12,7 +12,7 @@ function canvasSignIn(logins, instance, cb) {
             driver = await new Builder().forBrowser('chrome').build();
         });
 
-        it('Pull up Salesforce ', async function () {
+        it('Pull up Canvas instance ', async function () {
             await driver.get('');
         });
     });

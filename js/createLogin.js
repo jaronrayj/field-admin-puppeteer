@@ -2,9 +2,9 @@ const randomString = require('../util/randomString');
 const setupAdmin = require('../js/setupAdmin');
 module.exports =
     async function createLoginOnly(user, instance, canvasSignin) {
+        console.log("createLoginOnly -> user", user);
         let password = randomString();
         user.password = password;
-        console.log("createLoginOnly -> user", user);
 
         instance.post(`/accounts/self/logins`, {
             user: {

@@ -16,6 +16,8 @@ function createUser(user, instance, canvasSignin) {
     } else {
         unique_id = user.login_id
     }
+    user.uniqueLogin = unique_id;
+    user.password = password;
     let params = {
         user: {
             name: username,
@@ -36,7 +38,7 @@ function createUser(user, instance, canvasSignin) {
             if (user.accountAdmin) {
                 setupAdmin(response.data.id, instance)
             }
-            response.data.password = password;
+            user.loginInfo.removeLogin = false;
             user.loginInfo = response.data;
             if (!user.fieldAdmin) {
                 console.log(`Not creating as field admin`);
