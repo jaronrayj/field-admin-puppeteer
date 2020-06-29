@@ -2,19 +2,19 @@ const randomString = require('../util/randomString');
 const setupAdmin = require('../js/setupAdmin');
 
 module.exports = 
-function createUser(row, instance, fieldAdminSetup) {
+function createUser(user, instance, canvasSignin) {
     let username;
     let unique_id;
     let password = randomString();
-    if (!row.fullName) {
-        username = row.email
+    if (!user.fullName) {
+        username = user.email
     } else {
-        username = row.fullName
+        username = user.fullName
     }
-    if (!row.login_id) {
-        unique_id = row.email
+    if (!user.login_id) {
+        unique_id = user.email
     } else {
-        unique_id = row.login_id
+        unique_id = user.login_id
     }
     let params = {
         user: {
@@ -22,7 +22,7 @@ function createUser(row, instance, fieldAdminSetup) {
             skip_registration: true,
         },
         communication_channel: {
-            address: row.email
+            address: user.email
         },
         pseudonym: {
             send_confirmation: true,
@@ -33,15 +33,15 @@ function createUser(row, instance, fieldAdminSetup) {
     instance.post(`accounts/self/users`, params)
         .then(function (response) {
             console.log(`${username} created`);
-            if (row.account_admin) {
+            if (user.accountAdmin) {
                 setupAdmin(response.data.id, instance)
             }
             response.data.password = password;
-            row.loginInfo = response.data;
-            if (!row.field_admin) {
+            user.loginInfo = response.data;
+            if (!user.fieldAdmin) {
                 console.log(`Not creating as field admin`);
             } else {
-                fieldAdminSetup(row, instance);
+                canvasSignin(user, instance);
             }
         })
         .catch(function (error) {

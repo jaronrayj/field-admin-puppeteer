@@ -1,6 +1,10 @@
-module.exports = 
-function canvasSignIn(logins, cb) {
+const removeLogins = require("./removeLogins");
 
+module.exports = 
+function canvasSignIn(logins, instance, cb) {
+    console.log("canvasSignIn -> logins", logins);
+    // removeLogins(logins, instance);
+    return console.log("made it");
     describe('Login and pull Cases ID', function () {
         let driver;
 

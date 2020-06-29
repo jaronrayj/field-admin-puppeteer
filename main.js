@@ -6,7 +6,6 @@ const axios = require('axios');
 const fs = require('fs');
 const createUser = require('./js/createUser');
 const createLogin = require('./js/createLogin');
-const removeLogins = require('./js/removeLogins');
 const parseJson = require('parse-json');
 const jsonLocation = fs.readdirSync('./csv-pull');
 const { Builder, Key, By, until } = require('selenium-webdriver');
@@ -24,11 +23,11 @@ const token = process.env.TOKEN
 
 // Have this change based off of file imported
 const csv = [{
-    canvasDomain: 'jjohnson.instructure.com',
+    domain: 'jjohnson.instructure.com',
     email: 'example@example.com',
     sfAccountId: '001A000001FmoXJIAZ',
-    account_admin: true,
-    field_admin: false,
+    accountAdmin: true,
+    fieldAdmin: true,
     fullName: 'Field Admin',
 }];
 
@@ -40,32 +39,32 @@ const logins = [];
 
 // Run main process here
 describe('Check Canvas accounts and create', function () {
-    csv.forEach(row => {
+    csv.forEach(user => {
         // api creds setup
         instance = axios.create({
-            baseURL: `https://${row.canvasDomain}/api/v1`,
+            baseURL: `https://${user.domain}/api/v1`,
             headers: { 'Authorization': `Bearer ${token}` }
         });
 
-        instance.get(`/accounts/self/users?search_term=${row.email}&include[]=email`)
+        instance.get(`/accounts/self/users?search_term=${user.email}&include[]=email`)
             .then(response => {
                 if (response.data.length === 0) {
                     // Create user with specified information
-                    createUser(row, instance, canvasSignIn);
-                } else if (!row.field_admin) {
-                    console.log(`${row.email} exists, not creating as field admin`);
+                    createUser(user, instance, canvasSignIn);
+                } else if (!user.fieldAdmin) {
+                    console.log(`${user.email} exists, not creating as field admin`);
                 } else {
                     for (let i = 0; i < response.data.length; i++) {
-                        const user = response.data[i];
-                        if (response.length = 1 && user.email === row.email) {
+                        const returnUser = response.data[i];
+                        if (response.length = 1 && returnUser.email === user.email) {
                             // Create a login that will be deleted later
                             let num = 400;
-                            let uniqueLogin = `fieldadminsetup${num}`
-
+                            user.uniqueLogin = `fieldadminsetup${num}`;
                             num += 1;
-                            createLogin(response.data, row, instance, canvasSignIn);
+                            user.canvas = response.data;
+                            createLogin(user, instance, canvasSignIn);
                         } else {
-                            console.log(`Could not verify correct user for ${row.email}`);
+                            console.log(`Could not verify correct user for ${user.email}`);
                         }
                     }
                 }
