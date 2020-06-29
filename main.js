@@ -1,20 +1,19 @@
 require('dotenv').config()
 require('chromedriver');
 
-
+// const { Builder, Key, By, until } = require('selenium-webdriver');
 const axios = require('axios');
 const fs = require('fs');
+const jsonLocation = fs.readdirSync('./csv-pull');
+const { domain } = require('process');
+const axiosThrottle = require('axios-throttle');
 const createUser = require('./js/createUser');
 const createLogin = require('./js/createLogin');
 const parseJson = require('parse-json');
-const jsonLocation = fs.readdirSync('./csv-pull');
-const { Builder, Key, By, until } = require('selenium-webdriver');
-const { domain } = require('process');
-const axiosThrottle = require('axios-throttle');
 const canvasSignIn = require('./js/canvasSignIn');
+
 //pass axios object and value of the delay between requests in ms
 axiosThrottle.init(axios, 200)
-
 // Variables
 const oktausername = process.env.OKTALOGIN
 const oktapassword = process.env.OKTAPASSWORD
@@ -37,44 +36,38 @@ const logins = [];
 
 
 // Run main process here
-describe('Check Canvas accounts and create', function () {
-    csv.forEach(user => {
-        // api creds setup
-        instance = axios.create({
-            baseURL: `https://${user.domain}/api/v1`,
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
 
-        instance.get(`/accounts/self/users?search_term=${user.email}&include[]=email`)
-            .then(response => {
-                if (response.data.length === 0) {
-                    // Create user with specified information
-                    createUser(user, instance, canvasSignIn);
-                } else if (!user.fieldAdmin) {
-                    console.log(`${user.email} exists, not creating as field admin`);
-                } else {
-                    for (let i = 0; i < response.data.length; i++) {
-                        const returnUser = response.data[i];
-                        if (response.length = 1 && returnUser.email === user.email) {
-                            // Create a login that will be deleted later
-                            let num = 400;
-                            user.uniqueLogin = `fieldadminsetup${num}`;
-                            num += 1;
-                            user.canvas = response.data;
-                            createLogin(user, instance, canvasSignIn);
-                        } else {
-                            console.log(`Could not verify correct user for ${user.email}`);
-                        }
+csv.forEach(user => {
+    // api creds setup
+    instance = axios.create({
+        baseURL: `https://${user.domain}/api/v1`,
+        headers: { 'Authorization': `Bearer ${token}` }
+    });
+
+    instance.get(`/accounts/self/users?search_term=${user.email}&include[]=email`)
+        .then(response => {
+            if (response.data.length === 0) {
+                // Create user with specified information
+                createUser(user, instance, canvasSignIn);
+            } else if (!user.fieldAdmin) {
+                console.log(`${user.email} exists, not creating as field admin`);
+            } else {
+                for (let i = 0; i < response.data.length; i++) {
+                    const returnUser = response.data[i];
+                    if (response.length = 1 && returnUser.email === user.email) {
+                        // Create a login that will be deleted later
+                        let num = 400;
+                        user.uniqueLogin = `fieldadminsetup${num}`;
+                        num += 1;
+                        user.canvas = response.data;
+                        createLogin(user, instance, canvasSignIn);
+                    } else {
+                        console.log(`Could not verify correct user for ${user.email}`);
                     }
                 }
-            })
-    })
-    // console.log("Finished admin/login creation, working field admin now");
-    // fieldAdminSetup(logins)
-
-
+            }
+        })
 })
-
 
 // Set up as Field Admin
 
