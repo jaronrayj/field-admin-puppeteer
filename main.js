@@ -1,7 +1,7 @@
 require('dotenv').config()
 require('chromedriver');
 
-// const { Builder, Key, By, until } = require('selenium-webdriver');
+const { Builder, Key, By, until } = require('selenium-webdriver');
 const axios = require('axios');
 const fs = require('fs');
 const jsonLocation = fs.readdirSync('./csv-pull');
@@ -30,12 +30,8 @@ const csv = [{
 }];
 
 
-// Changing variables
-const toBeDeletedLogins = [];
-const logins = [];
-
-
 // Run main process here
+
 
 csv.forEach(user => {
     // api creds setup
@@ -69,8 +65,28 @@ csv.forEach(user => {
         })
 })
 
-// Set up as Field Admin
+describe('Login and pull Cases ID', function () {
+    var driver;
 
+    before(async function () {
+        driver = await new Builder().forBrowser('chrome').build();
+    });
+
+    console.log("made it");
+    it('Pull up Canvas instance ', async function () {
+        await driver.get(`https://${user.domain}/login/canvas`);
+        await driver.wait(until.elementLocated(By.className('ic-Input text')), 100000);
+        await driver.findElement(By.id('pseudonym_session_unique_id')).sendKeys(user.uniqueLogin);
+        await driver.findElement(By.id('pseudonym_session_password').sendKeys(user.password));
+        await driver.findElement(By.css("button[class='ic-Form-control ic-Form-control--login']")).click();
+        await driver.wait(until.elementLocated(By.className('ic-Dashboard-header__title')), 100000);
+        console.log("made it");
+        // await driver.get(`http://adminconsole.canvaslms.com`);
+    });
+    // removeLogins(user, instance);
+});
+
+// Set up as Field Admin
 
 //  SF startup
 //     it('Pull up Salesforce ', async function () {
