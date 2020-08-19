@@ -20,7 +20,7 @@ module.exports =
                 setupAdmin(response.data.user_id, instance)
             }
             console.log("createLoginOnly -> response.data", response.data);
-            response.data.removeLogin = true;
+            // response.data.removeLogin = true;
             user.loginInfo = response.data;
             canvasSignin(user, instance);
         })

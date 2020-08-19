@@ -1,16 +1,16 @@
 require('dotenv').config()
-require('chromedriver');
+// require('chromedriver');
 
 const { Builder, Key, By, until } = require('selenium-webdriver');
 const axios = require('axios');
 const fs = require('fs');
-const jsonLocation = fs.readdirSync('./csv-pull');
-const { domain } = require('process');
+// const { domain } = require('process');
 const axiosThrottle = require('axios-throttle');
 const createUser = require('./js/createUser');
 const createLogin = require('./js/createLogin');
-const parseJson = require('parse-json');
 const canvasSignIn = require('./js/canvasSignIn');
+const csv2json = require('csvtojson');
+const inq = require('inquirer');
 
 //pass axios object and value of the delay between requests in ms
 axiosThrottle.init(axios, 200)
@@ -23,49 +23,79 @@ const token = process.env.TOKEN
 const csv = [{
     domain: 'jjohnson.instructure.com',
     email: 'example@example.com',
-    sfAccountId: '001A000001FmoXJIAZ',
-    accountAdmin: true,
-    fieldAdmin: true,
-    fullName: 'Field Admin',
+    sf_id: '001A000001FmoXJIAZ',
+    account_admin: true,
+    field_admin: true,
+    full_name: 'Field Admin',
+    login_id: "jjohsonfahi",
 }];
 
+const jsonLocation = fs.readdirSync('./csv-storage')
+inq.prompt([
+    {
+        type: "list",
+        message: "Which csv has the data you want to upload?",
+        choices: jsonLocation,
+        name: "jsonFile"
+    }
+])
+    .then(inqRes => {
 
+        csv2json()
+            .fromFile(`./csv-storage/${inqRes.jsonFile}`)
+            .then((jsonObj) => {
+                jsonObj.forEach(user => {
+                    // api creds setup
+                    instance = axios.create({
+                        baseURL: `https://${user.domain}/api/v1`,
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    let search;
+                    if (user.login_id) {
+                        search = user.login_id
+                    } else {
+                        search = user.email
+                    }
+
+                    instance.get(`/accounts/self/users?search_term=${search}&include[]=email`)
+                        .then(response => {
+                            if (response.data.length === 0) {
+                                // Create user with specified information
+                                createUser(user, instance, canvasSignIn);
+                            } else if (!user.fieldAdmin) {
+                                console.log(`${user.email} exists, not creating as field admin`);
+                            } else {
+                                for (let i = 0; i < response.data.length; i++) {
+                                    const returnUser = response.data[i];
+                                    if (response.length = 1 && returnUser.email === user.email) {
+                                        // Create a login that will be deleted later
+                                        let num = 400;
+                                        user.uniqueLogin = `fieldadminsetup${num}`;
+                                        num += 1;
+                                        user.canvas = response.data;
+                                        // todo set up field admin portion using this
+                                        // createLogin(user, instance, canvasSignIn);
+                                    } else {
+                                        console.log(`Could not verify correct user for ${user.email}`);
+                                    }
+                                }
+                            }
+                        })
+                })
+            })
+
+    });
 // Run main process here
 
 
-csv.forEach(user => {
-    // api creds setup
-    instance = axios.create({
-        baseURL: `https://${user.domain}/api/v1`,
-        headers: { 'Authorization': `Bearer ${token}` }
-    });
 
-    instance.get(`/accounts/self/users?search_term=${user.email}&include[]=email`)
-        .then(response => {
-            if (response.data.length === 0) {
-                // Create user with specified information
-                createUser(user, instance, canvasSignIn);
-            } else if (!user.fieldAdmin) {
-                console.log(`${user.email} exists, not creating as field admin`);
-            } else {
-                for (let i = 0; i < response.data.length; i++) {
-                    const returnUser = response.data[i];
-                    if (response.length = 1 && returnUser.email === user.email) {
-                        // Create a login that will be deleted later
-                        let num = 400;
-                        user.uniqueLogin = `fieldadminsetup${num}`;
-                        num += 1;
-                        user.canvas = response.data;
-                        createLogin(user, instance, canvasSignIn);
-                    } else {
-                        console.log(`Could not verify correct user for ${user.email}`);
-                    }
-                }
-            }
-        })
-})
+
+
 
 // This is where it breaks....
+
+// Switch this when functioning to the start in package.json
+// "start": "mocha --recursive --timeout 1000000 main.js"
 
 // describe('Login and pull Cases ID', function () {
 //     var driver;

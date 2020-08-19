@@ -15,28 +15,24 @@ or
 ```
 $ yarn install
 ```
-Create a file at the root level named ".env". add the capitalized words and ='s and add in your information.
+Create a file at the root level (in the folder field_admin_selenium) named ".env". add:
 
-* OKTALOGIN=oktausername
-* OKTAPASSWORD=oktapassword
-* TOKEN=CanvasToken(no Bearer)
+* TOKEN=
+
+And put in your Canvas token without Bearer. Example: TOKEN=17~32131243413213123
 
 ### Each time CSV file structure (in no specific order)
 
-Add admins.csv file to 'field_admin_selenium/csv-pull' folder (must be named that)
+Add csv file to 'field_admin_selenium/csv-storage' folder. Program will ask you which file to choose.
 
 Required fields -
 * email - User email
-* domain - Canvas domain (ex. domain.instructure.com)
+* domain - Canvas domain (ex. "domain.instructure.com" in that exact format)
 
 Optional fields -
-* full_name - User's full name to create account
-* login_id - User's login_id (default is email above)
-* sf_id - Salesforce Account ID (required for Field Admin setup)
-    - ex. https://instructure.lightning.force.com/lightning/r/Account/001A000001FmoXJIAZ/view
-    - ID = 001A000001FmoXJIAZ
-* field_admin - boolean, set true to enable as field admin (default is true)
-* account_admin - boolean, set true to enable as account admin (default is true)
+* full_name - User's full name to create account (default is email)
+* login_id - User's login_id (default is email)
+* account_admin - boolean, set "false" or "f" to not set up as account admin (default is true)
 
 ### Sample file
 
@@ -55,3 +51,16 @@ or
 ```
 yarn start
 ```
+
+### The goal...
+I do want this to be able to run for Field admins also... storing some notes about it here in case it happens in the future
+
+.env file
+* OKTALOGIN=oktausername
+* OKTAPASSWORD=oktapassword
+
+Optional Fields
+* sf_id - Salesforce Account ID (required for Field Admin setup)
+    - ex. https://instructure.lightning.force.com/lightning/r/Account/001A000001FmoXJIAZ/view
+    - ID = 001A000001FmoXJIAZ
+* field_admin - boolean, set true to enable as field admin (default is true)

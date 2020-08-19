@@ -3,16 +3,18 @@
   "version": "1.0.0",
   "main": "main.js",
   "scripts": {
-    "start": "mocha --recursive --timeout 1000000 main.js"
+    "start": "node main.js"
   },
   "license": "MIT",
   "dependencies": {
     "axios": "^0.19.2",
     "axios-throttle": "^1.0.2",
     "chromedriver": "^83.0.0",
+    "csvtojson": "^2.0.10",
     "dotenv": "^8.2.0",
+    "fs": "^0.0.1-security",
+    "inquirer": "^7.3.3",
     "jsforce": "^1.9.3",
-    "parse-json": "^5.0.0",
     "selenium-webdriver": "^4.0.0-alpha.7"
   },
   "devDependencies": {
