@@ -64,6 +64,8 @@ inq.prompt([
                                 createUser(user, instance, canvasSignIn);
                             } else if (!user.fieldAdmin) {
                                 console.log(`${user.email} exists, not creating as field admin`);
+                            } else if (user.account_admin.toLowerCase() !== "false" || user.account_admin.toLowerCase() !== "f") {
+                                    setupAdmin(response.data.id, instance)
                             } else {
                                 for (let i = 0; i < response.data.length; i++) {
                                     const returnUser = response.data[i];
