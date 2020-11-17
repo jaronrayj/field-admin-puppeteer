@@ -1,4 +1,4 @@
 email,domain,full_name,login_id,sf_id,field_admin,account_admin
-example@example.com,jjohnson.instructure.com,Try This,somethingElse,001A000001FmoXJIAZ,TRUE,
+example@example.com,jjohnson.instructure.com,Try This,somethingElse,001A000001FmoXJIAZ,TRUE,False
 jaronjohnson14@gmail.com,jjohnson.instructure.com,Not Jaron,,001A000001FmoXJIAZ,FALSE,TRUE
 example3@example.com,jjohnson.instructure.com,,jokes,001A000001FmoXJIAZ,TRUE,FALSE

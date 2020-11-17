@@ -1,30 +1,25 @@
 const randomString = require('../util/randomString');
-const setupAdmin = require('../js/setupAdmin');
+// const getSAMLResponse = require('../js/getSAMLResponse');
+
 module.exports =
-    async function createLoginOnly(user, instance, canvasSignin) {
-        console.log("createLoginOnly -> user", user);
+    async function createLogin(user, instance) {
         let password = randomString();
         user.password = password;
 
         instance.post(`/accounts/self/logins`, {
-            user: {
-                id: user.canvas[0].id,
-            },
-            login: {
-                unique_id: user.uniqueLogin,
-                password: password
-            }
-        }).then(function (response) {
-            console.log(`${user.email} exists, created login`);
-            if (user.accountAdmin) {
-                setupAdmin(response.data.user_id, instance)
-            }
-            console.log("createLoginOnly -> response.data", response.data);
-            // response.data.removeLogin = true;
-            user.loginInfo = response.data;
-            canvasSignin(user, instance);
-        })
+                user: {
+                    id: user.canvas[0].id,
+                },
+                login: {
+                    unique_id: user.unique_id,
+                    password: password
+                }
+            }).then(async function (response) {
+                user.loginInfo = response.data;
+                console.log("inside function", user)
+            })
             .catch(function (error) {
                 console.log(error);
             });
+        return user;
     }
