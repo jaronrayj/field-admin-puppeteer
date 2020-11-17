@@ -1,6 +1,7 @@
 // Insert array of logins
 module.exports =
-    function removeLogins(user, instance, cb) {
+    function removeLogins(user, instance) {
+        // todo need to first check for any users in that domain for "fieldadminsetup_removeme" then remove them
         // arr.forEach(login => {
         console.log("removeLogins -> login", user);
         instance.delete(`/users/${user.loginInfo.user_id}/logins/${user.loginInfo.id}`)

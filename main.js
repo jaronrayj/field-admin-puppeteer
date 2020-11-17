@@ -17,6 +17,8 @@ const csv2json = require('csvtojson');
 const inq = require('inquirer');
 const getSAMLResponse = require('./js/getSAMLResponse');
 const setupAdmin = require('./js/setupAdmin');
+const randomString = require('./util/randomString');
+const removeLogins = require('./js/removeLogins');
 
 //pass axios object and value of the delay between requests in ms
 axiosThrottle.init(axios, 200)
@@ -37,86 +39,86 @@ const token = process.env.TOKEN
 // }];
 
 const jsonLocation = fs.readdirSync('./csv-storage')
+// Where all of the users will be stored
 
-function main() {
-createUserOrLogin()
-}
+async function createUserOrLogin(cb) {
+    const userBank = [];
+    try {
+        inq.prompt([{
+                type: "list",
+                message: "Which csv has the data you want to upload?",
+                choices: jsonLocation,
+                name: "jsonFile"
+            }])
+            .then(inqRes => {
 
-function createUserOrLogin() {
-    inq.prompt([{
-            type: "list",
-            message: "Which csv has the data you want to upload?",
-            choices: jsonLocation,
-            name: "jsonFile"
-        }])
-        .then(inqRes => {
-
-            csv2json()
-                .fromFile(`./csv-storage/${inqRes.jsonFile}`)
-                .then((jsonObj) => {
-                    jsonObj.forEach(user => {
-                        // api creds setup
-                        user.deleteLogin = false;
-                        instance = axios.create({
-                            baseURL: `https://${user.domain}/api/v1`,
-                            headers: {
-                                'Authorization': `Bearer ${token}`
-                            }
-                        });
-                        let search;
-                        if (user.login_id) {
-                            search = user.login_id
-                        } else {
-                            search = user.email
-                        }
-
-                        instance.get(`/accounts/self/users?search_term=${search}&include[]=email`)
-                            .then(async response => {
-                                if (response.data.length === 0) {
-                                    // User doesn't exist, creating
-                                    createUser(user, instance);
-                                } else if (response.data.length === 1 && response.data[0].email === user.email) {
-                                    // Check if the one user that exists has the same email to verify
-                                    console.log(`${user.email}'s account exists`);
-                                    if (user.account_admin.toLowerCase() === "true" || user.account_admin.toLowerCase() === "t") {
-                                        setupAdmin(response.data[0].id, instance)
-                                    } else {
-                                        console.log(`Not setting up ${user.email} as an account admin`);
-                                    }
-                                    if (user.field_admin.toLowerCase() === "true" || user.field_admin.toLowerCase() === "t") {
-                                        let num = Math.floor(Math.random() * 500)
-                                        user.unique_id = `fieldadminsetup_removeme${num}`;
-                                        user.id = response.data.id;
-                                        user.canvas = response.data;
-                                        // Create a login that will be deleted later
-                                        user = await createLogin(user, instance);
-                                        user.deleteLogin = true;
-                                        console.log("outside function", user)
-                                        // var samlResponse = await getSAMLResponse.getSAMLResponse(user);
-                                        // if (samlResponse != "") {
-                                        //     console.log("getSAMLResponse Test Successful. First 50 characters of SAMLResponse:" + samlResponse.substring(0, 49));
-                                        //     //console.log("Unit Test Successful. Complete SAMLResponse (URI Encoded):");
-                                        //     //console.log(encodeURI(samlResponse));
-                                        // } else {
-                                        //     console.log("getSAMLResponse Test Unsuccessful. Nothing returned. Check the console for a possible error.");
-                                        // }
-                                    } else {
-                                        console.log(`Not setting up ${user.email} as a field admin`);
-                                    }
-                                } else {
-                                    // More than one users and email did not match not changing the users
-                                    console.log(`Could not verify correct user for ${user.email}`);
+                csv2json()
+                    .fromFile(`./csv-storage/${inqRes.jsonFile}`)
+                    .then(jsonObj => {
+                        jsonObj.forEach(user => {
+                            // api creds setup
+                            user.deleteLogin = false;
+                            instance = axios.create({
+                                baseURL: `https://${user.domain}/api/v1`,
+                                headers: {
+                                    'Authorization': `Bearer ${token}`
                                 }
+                            });
+                            // Using either the login provided or the email provided
+                            if (user.login_id) {
+                                user.unique_id = user.login_id
+                            } else if (user.email) {
+                                user.unique_id = user.email
+                            } else {
+                                console.log("missing email or login_id for user, not creating.");
+                            }
+                            let password = randomString();
+                            user.password = password;
 
-                                // Todo Verification if more than 1 user
-                                // for (let i = 0; i < response.data.length; i++) {
-                                // const returnUser = response.data[i];
-                                // }
-                            })
+                            // Search for the user by login id
+                            instance.get(`/accounts/self/users?search_term=${user.unique_id}&include[]=email`)
+                                .then(async response => {
+                                    if (response.data.length === 0) {
+                                        // User doesn't exist, creating
+                                        createUser(user, instance);
+                                        userBank.push(user);
+                                    } else if (response.data.length === 1 && response.data[0].email === user.email) {
+                                        // Check if the one user that exists has the same email to verify
+                                        console.log(`${user.unique_id}'s account exists`);
+                                        if (user.account_admin.toLowerCase() === "true" || user.account_admin.toLowerCase() === "t") {
+                                            setupAdmin(response.data[0].id, instance)
+                                        } else {
+                                            console.log(`Not setting up ${user.unique_id} as an account admin`);
+                                        }
+                                        if (user.field_admin.toLowerCase() === "true" || user.field_admin.toLowerCase() === "t") {
+                                            let num = Math.floor(Math.random() * 5000)
+                                            user.unique_id = `fieldadminsetup_removeme${num}`;
+                                            user.id = response.data[0].id;
+                                            // Create a login that will be deleted later
+                                            user.deleteLogin = true;
+                                            createLogin(user, instance);
+                                            userBank.push(user);
+                                        } else {
+                                            console.log(`Not setting up ${user.unique_id} as a field admin`);
+                                        }
+                                    } else {
+                                        // More than one users and email did not match not changing the users
+                                        console.log(`Could not verify correct user for ${user.unique_id}`);
+                                    }
+
+                                    // Todo Verification if more than 1 user
+                                    // for (let i = 0; i < response.data.length; i++) {
+                                    // const returnUser = response.data[i];
+                                    // }
+                                })
+                        })
                     })
-                })
 
-        });
+            });
+    } catch (error) {
+        console.log(error);
+    }
+    // getSAMLResponse(userBank);
 }
 
-main();
+createUserOrLogin();
