@@ -54,6 +54,7 @@ let createUserOrLogin = new Promise((resolve, reject) => {
             csv2json()
                 .fromFile(`./csv-storage/${inqRes.jsonFile}`)
                 .then(jsonObj => {
+                    let count = 0;
                     jsonObj.forEach(user => {
                         // api creds setup
                         user.deleteLogin = false;
@@ -105,25 +106,21 @@ let createUserOrLogin = new Promise((resolve, reject) => {
                                     // More than one users and email did not match not changing the users
                                     console.log(`Could not verify correct user for ${user.unique_id}`);
                                 }
-
-                                // Todo Verification if more than 1 user
-                                // for (let i = 0; i < response.data.length; i++) {
-                                // const returnUser = response.data[i];
-                                // }
-                                if (userBank.length > 0) {
-                                    resolve();
-                                } else {
-                                    reject();
+                                count += 1;
+                                if (jsonObj.length === count) {
+                                    resolve(userBank);
                                 }
                             })
-                        })
+                    })
                 })
         })
 })
 
 createUserOrLogin
-    .then(() => {
-        main2(userBank);
+    .then(users => {
+        // setTimeout(() => {
+            main2(users);
+        // }, 3000);
     })
     .catch(err => {
         console.log(err);
@@ -172,12 +169,13 @@ function main2(userBank) {
             })
             // await sleep(10000)
             if (results.length === userBank.length) {
+                removeLogins(userBank);
                 return resolve(results)
             }
         });
     });
     getSamlResponses.then(() => {
-        fs.writeFile('supportAdmins.json', JSON.stringify(results), function (err) {
+        fs.writeFile('supportAdmins.json', JSON.stringify(results, null, 2), function (err) {
             if (err) return console.log(err);
             console.log('written here: supportAdmins.json');
         });

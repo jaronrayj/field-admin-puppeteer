@@ -98,7 +98,7 @@ async function getFederatedID (samlResponseArray) {
         for (var i=0;i<samlResponseArray.length;i++) {
           // Get the samlResponse
           // The SAMLResponse is being passed in URI encoded. Decode it for the search
-          var samlResponse = decodeURI(samlResponseArray[i].samlResponse);
+          var samlResponse = decodeURI(samlResponseArray[i].samlResponseEncoded);
 
           // Fill in the field with the passed in SAMLResponse. Clear it first, enter the text, make sure 'Canvas Login' is selected, then press the validate button
           await driver.findElement(By.name("thePage:block:theForm:Assertion")).clear(); 
