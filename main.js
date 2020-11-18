@@ -40,85 +40,146 @@ const token = process.env.TOKEN
 
 const jsonLocation = fs.readdirSync('./csv-storage')
 // Where all of the users will be stored
+const userBank = [];
 
-async function createUserOrLogin(cb) {
-    const userBank = [];
-    try {
-        inq.prompt([{
-                type: "list",
-                message: "Which csv has the data you want to upload?",
-                choices: jsonLocation,
-                name: "jsonFile"
-            }])
-            .then(inqRes => {
+let createUserOrLogin = new Promise((resolve, reject) => {
+    inq.prompt([{
+            type: "list",
+            message: "Which csv has the data you want to upload?",
+            choices: jsonLocation,
+            name: "jsonFile"
+        }])
+        .then(async inqRes => {
 
-                csv2json()
-                    .fromFile(`./csv-storage/${inqRes.jsonFile}`)
-                    .then(jsonObj => {
-                        jsonObj.forEach(user => {
-                            // api creds setup
-                            user.deleteLogin = false;
-                            instance = axios.create({
-                                baseURL: `https://${user.domain}/api/v1`,
-                                headers: {
-                                    'Authorization': `Bearer ${token}`
-                                }
-                            });
-                            // Using either the login provided or the email provided
-                            if (user.login_id) {
-                                user.unique_id = user.login_id
-                            } else if (user.email) {
-                                user.unique_id = user.email
-                            } else {
-                                console.log("missing email or login_id for user, not creating.");
+            csv2json()
+                .fromFile(`./csv-storage/${inqRes.jsonFile}`)
+                .then(jsonObj => {
+                    jsonObj.forEach(user => {
+                        // api creds setup
+                        user.deleteLogin = false;
+                        instance = axios.create({
+                            baseURL: `https://${user.domain}/api/v1`,
+                            headers: {
+                                'Authorization': `Bearer ${token}`
                             }
-                            let password = randomString();
-                            user.password = password;
+                        });
+                        // Using either the login provided or the email provided
+                        if (user.login_id) {
+                            user.unique_id = user.login_id
+                        } else if (user.email) {
+                            user.unique_id = user.email
+                        } else {
+                            console.log("missing email or login_id for user, not creating.");
+                        }
+                        let password = randomString();
+                        user.password = password;
 
-                            // Search for the user by login id
-                            instance.get(`/accounts/self/users?search_term=${user.unique_id}&include[]=email`)
-                                .then(async response => {
-                                    if (response.data.length === 0) {
-                                        // User doesn't exist, creating
-                                        createUser(user, instance);
-                                        userBank.push(user);
-                                    } else if (response.data.length === 1 && response.data[0].email === user.email) {
-                                        // Check if the one user that exists has the same email to verify
-                                        console.log(`${user.unique_id}'s account exists`);
-                                        if (user.account_admin.toLowerCase() === "true" || user.account_admin.toLowerCase() === "t") {
-                                            setupAdmin(response.data[0].id, instance)
-                                        } else {
-                                            console.log(`Not setting up ${user.unique_id} as an account admin`);
-                                        }
-                                        if (user.field_admin.toLowerCase() === "true" || user.field_admin.toLowerCase() === "t") {
-                                            let num = Math.floor(Math.random() * 5000)
-                                            user.unique_id = `fieldadminsetup_removeme${num}`;
-                                            user.id = response.data[0].id;
-                                            // Create a login that will be deleted later
-                                            user.deleteLogin = true;
-                                            createLogin(user, instance);
-                                            userBank.push(user);
-                                        } else {
-                                            console.log(`Not setting up ${user.unique_id} as a field admin`);
-                                        }
+                        // Search for the user by login id
+                        instance.get(`/accounts/self/users?search_term=${user.unique_id}&include[]=email`)
+                            .then(async response => {
+                                if (response.data.length === 0) {
+                                    // User doesn't exist, creating
+                                    createUser(user, instance);
+                                    userBank.push(user);
+                                } else if (response.data.length === 1 && response.data[0].email === user.email) {
+                                    // Check if the one user that exists has the same email to verify
+                                    console.log(`${user.unique_id}'s account exists`);
+                                    if (user.account_admin.toLowerCase() === "true" || user.account_admin.toLowerCase() === "t") {
+                                        setupAdmin(response.data[0].id, instance)
                                     } else {
-                                        // More than one users and email did not match not changing the users
-                                        console.log(`Could not verify correct user for ${user.unique_id}`);
+                                        console.log(`Not setting up ${user.unique_id} as an account admin`);
                                     }
+                                    if (user.field_admin.toLowerCase() === "true" || user.field_admin.toLowerCase() === "t") {
+                                        let num = Math.floor(Math.random() * 5000)
+                                        user.unique_id = `fieldadminsetup_removeme${num}`;
+                                        user.id = response.data[0].id;
+                                        // Create a login that will be deleted later
+                                        user.deleteLogin = true;
+                                        createLogin(user, instance);
+                                        user.field_admin = true;
+                                        userBank.push(user);
+                                    } else {
+                                        console.log(`Not setting up ${user.unique_id} as a field admin`);
+                                    }
+                                } else {
+                                    // More than one users and email did not match not changing the users
+                                    console.log(`Could not verify correct user for ${user.unique_id}`);
+                                }
 
-                                    // Todo Verification if more than 1 user
-                                    // for (let i = 0; i < response.data.length; i++) {
-                                    // const returnUser = response.data[i];
-                                    // }
-                                })
+                                // Todo Verification if more than 1 user
+                                // for (let i = 0; i < response.data.length; i++) {
+                                // const returnUser = response.data[i];
+                                // }
+                                if (userBank.length > 0) {
+                                    resolve();
+                                } else {
+                                    reject();
+                                }
+                            })
                         })
-                    })
+                })
+        })
+})
 
-            });
-    } catch (error) {
-        console.log(error);
+createUserOrLogin
+    .then(() => {
+        main2(userBank);
+    })
+    .catch(err => {
+        console.log(err);
+    })
+
+async function asyncForEach(array, conditional, callback, ) {
+    for (let i = 0; i < array.length; i++) {
+        if (array[i][conditional]) {
+            await callback(array[i], i, array);
+        }
     }
-    // getSAMLResponse(userBank);
 }
 
-createUserOrLogin();
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function oneByOne(user) {
+    return new Promise((resolve, reject) => {
+        instance = axios.create({
+            baseURL: `https://${user.domain}/api/v1`,
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        getSAMLResponse(user.domain, user.unique_id, user.password)
+            .then(function (samlResponse) {
+                // todo build out way to remove created logins
+                // removeLogin(user.userUrl, instance, userLogin[0]).then(function () {
+                user.samlResponseEncoded = samlResponse
+                console.log(user)
+                resolve(user)
+                // })
+            });
+
+    });
+}
+
+
+function main2(userBank) {
+    var results = []
+    var getSamlResponses = new Promise((resolve) => {
+        asyncForEach(userBank, "field_admin", async function (user) {
+            await oneByOne(user).then(function (result) {
+                results.push(result)
+            })
+            // await sleep(10000)
+            if (results.length === userBank.length) {
+                return resolve(results)
+            }
+        });
+    });
+    getSamlResponses.then(() => {
+        fs.writeFile('supportAdmins.json', JSON.stringify(results), function (err) {
+            if (err) return console.log(err);
+            console.log('written here: supportAdmins.json');
+        });
+    })
+};
