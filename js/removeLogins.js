@@ -33,7 +33,7 @@ module.exports =
                                             try {
                                                 instance.delete(`/users/${login.user_id}/logins/${login.id}`)
                                                     .then(console.log(`Login deleted`))
-                                                    .catch(err => console.log("login's cleared"));
+                                                    .catch(err => console.log("Login's cleared"));
                                             } catch (error) {
                                                 console.log("cleared");
                                             }

@@ -16,6 +16,7 @@ const createLogin = require('./js/createLogin');
 const csv2json = require('csvtojson');
 const inq = require('inquirer');
 const getSAMLResponse = require('./js/getSAMLResponse');
+const getFederatedID = require('./js/getFederatedID');
 const setupAdmin = require('./js/setupAdmin');
 const randomString = require('./util/randomString');
 const removeLogins = require('./js/removeLogins');
@@ -118,9 +119,8 @@ let createUserOrLogin = new Promise((resolve, reject) => {
 
 createUserOrLogin
     .then(users => {
-        // setTimeout(() => {
-            main2(users);
-        // }, 3000);
+        // Get SAML Responses back from adminconsole page
+        samlAndFedId(users);
     })
     .catch(err => {
         console.log(err);
@@ -138,7 +138,7 @@ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function oneByOne(user) {
+async function getSamlOneByOne(user) {
     return new Promise((resolve, reject) => {
         instance = axios.create({
             baseURL: `https://${user.domain}/api/v1`,
@@ -160,24 +160,27 @@ async function oneByOne(user) {
 }
 
 
-function main2(userBank) {
-    var results = []
+function samlAndFedId(userBank) {
+    var samlResults = []
     var getSamlResponses = new Promise((resolve) => {
         asyncForEach(userBank, "field_admin", async function (user) {
-            await oneByOne(user).then(function (result) {
-                results.push(result)
+            await getSamlOneByOne(user).then(function (result) {
+                samlResults.push(result)
             })
-            // await sleep(10000)
-            if (results.length === userBank.length) {
+            if (samlResults.length === userBank.length) {
                 removeLogins(userBank);
-                return resolve(results)
+                return resolve(samlResults)
             }
         });
-    });
-    getSamlResponses.then(() => {
-        fs.writeFile('supportAdmins.json', JSON.stringify(results, null, 2), function (err) {
-            if (err) return console.log(err);
-            console.log('written here: supportAdmins.json');
-        });
     })
+    getSamlResponses.then(results =>
+        // new Promise((resolve) => {
+            getFederatedID(results).then(function (res) {
+                fs.writeFile('supportAdmins.json', JSON.stringify(res, null, 2), function (err) {
+                    if (err) return console.log(err);
+                    console.log('written to json here: supportAdmins.json');
+                });
+            })
+        // })
+    )
 };
