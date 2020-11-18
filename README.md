@@ -64,3 +64,7 @@ Optional Fields
     - ex. https://instructure.lightning.force.com/lightning/r/Account/001A000001FmoXJIAZ/view
     - ID = 001A000001FmoXJIAZ
 * field_admin - boolean, set true to enable as field admin (default is true)
+
+### Updating
+Each time Chrome updates you will need to update the package.json with the newest version of "chromedriver". Just update this number, currently I'm on: "^86.0.0"
+You can check your current version of chrome here: chrome://settings/help 
