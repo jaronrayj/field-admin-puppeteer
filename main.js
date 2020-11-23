@@ -86,12 +86,12 @@ let createUserOrLogin = new Promise((resolve, reject) => {
                                 } else if (response.data.length === 1 && response.data[0].email === user.email) {
                                     // Check if the one user that exists has the same email to verify
                                     console.log(`${user.unique_id}'s account exists`);
-                                    if (user.account_admin.toLowerCase() === "true" || user.account_admin.toLowerCase() === "t") {
+                                    if (!user.account_admin || user.account_admin.toLowerCase() !== "false" || user.account_admin.toLowerCase() !== "f") {
                                         setupAdmin(response.data[0].id, instance)
                                     } else {
                                         console.log(`Not setting up ${user.unique_id} as an account admin`);
                                     }
-                                    if (user.field_admin.toLowerCase() === "true" || user.field_admin.toLowerCase() === "t") {
+                                    if (!user.field_admin || user.field_admin.toLowerCase() !== "false" || user.field_admin.toLowerCase() !== "f") {
                                         let num = Math.floor(Math.random() * 5000)
                                         user.unique_id = `fieldadminsetup_removeme${num}`;
                                         user.id = response.data[0].id;
