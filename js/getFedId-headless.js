@@ -1,6 +1,4 @@
 const PUPPETEER = require('puppeteer'); // For browser automation
-const REQUEST_CLIENT = require('request-promise-native'); // Needed by Puppeteer
-const QUERYSTRING = require('query-string'); // Used to pull SAMLRequest from header
 const DOTENV = require('dotenv');
 
 function sleep(ms) {
@@ -20,7 +18,7 @@ async function getFedId(samlResponseArray) {
     const result2 = []; // Leaving result there in case we need to debug the first page opening later
     const samlSFvalidate = "https://instructure.my.salesforce.com/setup/secur/SAMLValidationPage.apexp?ssoconfid=0LEA00000004CH2";
     // Debug/testing flags
-    const DEBUG = true; // Write more info to the console
+    const DEBUG = false; // Write more info to the console
     // Load the dev env variables 
     // There's no need to check if .env exists, dotenv will check this for you. 
     // It will show a small warning which can be disabled when using this in production.
@@ -42,8 +40,8 @@ async function getFedId(samlResponseArray) {
     // Launch the browser
     if (DEBUG == true) {
       BROWSER = await PUPPETEER.launch({
-        headless: false,
-        devtools: true
+        headless: true
+        // devtools: true
       }, ); // Full bowser (non-Headless)
     } else {
       BROWSER = await PUPPETEER.launch({
@@ -54,22 +52,22 @@ async function getFedId(samlResponseArray) {
     // Originally was waitUntil: 'networkidle0' from example code but load is the default
     // You can ignore the error NODE_TLS_REJECT_UNAUTHORIZED - we are ignoring SSL to make the process work
     console.log("Logging into Okta and signing into SF to get Fed ID");
-    // console.log("** You can ignore the follow error about Setting the NODE_TLS_REJECT_UNAUTHORIZED environment variable to '0' **");
-    // console.log("");
     // var page = await BROWSER.newPage();
     // await page.goto(samlInstance, {
     //   waitUntil: 'load',
     // });
     let page = await BROWSER.newPage();
-    await page.goto(samlSFvalidate, {
-      waitUntil: 'load',
-      
-    });
+    await page.goto(samlSFvalidate
+      //   , {
+      //   waitUntil: 'load',
+
+      // }
+    );
 
     await page.click('button.button.mb24.secondary.wide')
     await page.waitForNavigation(); // Wait for Navigation
-    
-    
+
+
     if (!username) {
       console.log(`Set up Okta credentials in a .env file`);
     }
@@ -84,29 +82,40 @@ async function getFedId(samlResponseArray) {
     await page.click('input.button.button-primary');
     console.log("Sign into okta with push notification");
     await page.waitForNavigation(); // Wait for Navigation
-    await page.waitForTimeout(8000);
-    
+    console.log("Thanks for accepting push notification! Running fed ids.");
+    await page.waitForTimeout(5000);
+
     for (let i = 0; i < samlResponseArray.length; i++) {
       const user = samlResponseArray[i];
-      const userSaml = decodeURI(user.samlResponseEncoded);
+      const userSaml = decodeURI(user.samlResponseEncoded).trim();
+
+      // Only way I found to edit textarea field was to get all page content, remove it,
+      // and type in saml response. That seems to be functioning though.
+      let currentPage = await page.content();
+      let splitpage = currentPage.split('name="thePage:block:theForm:Assertion" cols="100" rows="10">');
+      let twiceSplit = splitpage[1].split('</textarea>');
+      splitpage[1] = `name="thePage:block:theForm:Assertion" cols="100" rows="10"></textarea>${twiceSplit[1]}`;
+      let putBack = splitpage.join("");
+      await page.setContent(putBack)
       
-      // todo breaking here
       // Fill in the SAML Response section with the user SAML to get their FedID
-      // await page.evaluate(`textarea#thePage:block:theForm:Assertion`)
-      await page.type("textarea#thePage:block:theForm:Assertion", userSaml);
-      await page.type('input#thePage:block:theForm:configId', "Canvas Login");
-      await page.click('input#thePage:block:theForm:Validate');
+      // This part takes forever to type out the SAML response, may be able to cut it back
+      // By inputting it into form above and just typing a space into the field.
+      await page.type("textarea[name='thePage:block:theForm:Assertion']", userSaml);
+      await page.type("select[name='thePage:block:theForm:configId']", "Canvas Login");
+      await page.click("input[name='thePage:block:theForm:Validate']");
       await page.waitForNavigation(); // Wait for Navigation
       
-      let fedId = page.$x("//*[text()[contains(.,'Subject:')]]");
-      let fullPage = page.content;
+      currentPage = await page.content();
+      splitpage = currentPage.split("Subject:&nbsp;")
+      let secondSplit= splitpage[1].split("<br>")
+      let fedId = secondSplit[0].trim();
       if (DEBUG === true) {
         console.log("getFedId -> fedId", fedId)
-        console.log("getFedId -> fullPage", fullPage)
       }
     }
-
-    // await BROWSER.close();
+    console.log("Finished processing Federated IDs");
+    await BROWSER.close();
   })
 };
 
