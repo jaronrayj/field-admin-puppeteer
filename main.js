@@ -16,7 +16,7 @@ const createLogin = require('./js/createLogin');
 const csv2json = require('csvtojson');
 const inq = require('inquirer');
 const getSAMLResponse = require('./js/getSAMLResponse');
-const getFed = require('./js/getFederatedID');
+const getFed = require('./js/getFedId-headless');
 const setupAdmin = require('./js/setupAdmin');
 const randomString = require('./util/randomString');
 const removeLogins = require('./js/removeLogins');
@@ -172,7 +172,7 @@ function samlAndFedId(userBank) {
     })
     getSamlResponses.then(results => {
         // Get federated id from Salesforce
-        getFed.getFederatedID(results).then(function (res) {
+        getFed(results).then(function (res) {
             // Write results to json file in same directory
             fs.writeFile('supportAdmins.json', JSON.stringify(res, null, 2), function (err) {
                 if (err) return console.log(err);

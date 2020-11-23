@@ -115,7 +115,7 @@ module.exports =
         await page.click('.Button--primary');
         await page.waitForNavigation(); // Wait for Navigation
       } catch (error) {
-        console.log("The acceptable use terms didn't appear.")
+        // console.log("The acceptable use terms didn't appear.")
       }
 
       // Open a second tab. When we used the first tab/page, it wouldn't navigate to the next page
