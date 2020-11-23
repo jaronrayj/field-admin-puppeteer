@@ -1,4 +1,4 @@
-# field-admin-selenium
+# field-admin-puppeteer
 
 This will run with Canvas apis and selenium to create users in Canvas, or add a login to their account and go through the field admin adding process. Your Salesforce token needs to be allowed to set up field admins for this to function.
 
