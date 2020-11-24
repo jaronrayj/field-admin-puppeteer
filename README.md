@@ -66,7 +66,7 @@ yarn start
 
 ### The goal...
 I do want this to be able to run for Field admins also... storing some notes about it here in case it happens in the future
-Not built out to set up a user in SF at this point, but **will** spit out the federated ID if field_admin is set to "true" or "t"
+Not built out to set up a user in SF at this point, but **will** spit out the federated ID by default right now.
 
 Optional Fields
 * sf_id - Salesforce Account ID (required for Field Admin setup)
