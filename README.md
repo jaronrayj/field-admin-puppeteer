@@ -1,6 +1,12 @@
 # field-admin-puppeteer
+*PLEASE READ ALL*
 
 This will run with Canvas apis and selenium to create users in Canvas, or add a login to their account and go through the field admin adding process. Your Salesforce token needs to be allowed to set up field admins for this to function.
+
+It does require you to have push notifications turned on for Okta
+Verify as well, midway through it will ask you to accept that it's you trying to sign in.
+
+This process _should_ also send the welcome email to the new admins and ask that they set up a password for the first time.
 
 ## Prereqs
 ### One Time - Clone and Install and .env file setup

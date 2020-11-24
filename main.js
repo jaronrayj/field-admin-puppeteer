@@ -1,12 +1,12 @@
 require('dotenv').config()
 // require('chromedriver');
 
-const {
-    Builder,
-    Key,
-    By,
-    until
-} = require('selenium-webdriver');
+// const {
+//     Builder,
+//     Key,
+//     By,
+//     until
+// } = require('selenium-webdriver');
 const axios = require('axios');
 const fs = require('fs');
 // const { domain } = require('process');
@@ -105,7 +105,7 @@ let createUserOrLogin = new Promise((resolve, reject) => {
                                     }
                                 } else {
                                     // More than one users and email did not match not changing the users
-                                    console.log(`Could not verify correct user for ${user.unique_id}`);
+                                    console.log(`Could not verify correct user for ${user.unique_id}, not setting up with anything. Multiple users with login or email.`);
                                 }
                                 count += 1;
                                 if (jsonObj.length === count) {
@@ -166,6 +166,7 @@ function samlAndFedId(userBank) {
             })
             if (samlResults.length === userBank.length) {
                 removeLogins(userBank);
+                console.log("Triple checked that all extra logins removed^");
                 return resolve(samlResults)
             }
         });

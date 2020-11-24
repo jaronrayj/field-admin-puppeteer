@@ -45,8 +45,7 @@ module.exports =
                     } else {
                         console.log(`Verified logins removed for ${user.domain}`);
                     }
-                    console.log("Triple checked that all extra logins removed^");
                 })
                 .catch(err => console.log(err));
-        });
+            });
     }
