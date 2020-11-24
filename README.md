@@ -21,11 +21,11 @@ or
 ```
 $ yarn install
 ```
-Create a file at the root level (in the folder field_admin_selenium) named ".env". add:
+Create a file at the root level (in the folder field_admin_selenium) named ".env". add (minus "[]"):
 
-* OKTALOGIN=oktausername
-* OKTAPASSWORD=oktapassword
-* TOKEN=token
+* OKTA_USERNAME=[put your okta username here]
+* OKTA_PASSWORD=[okta password]
+* TOKEN=[Canvas token]
 
 And put in your Canvas token without Bearer. Example: TOKEN=17~32131243413213123
 
