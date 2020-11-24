@@ -1,5 +1,5 @@
 # field-admin-puppeteer
-*PLEASE READ ALL*
+**PLEASE READ ALL**
 
 This will run with Canvas apis and selenium to create users in Canvas, or add a login to their account and go through the field admin adding process. Your Salesforce token needs to be allowed to set up field admins for this to function.
 
@@ -23,9 +23,9 @@ $ yarn install
 ```
 Create a file at the root level (in the folder field_admin_selenium) named ".env". add:
 
-* OKTALOGIN=oktausername
-* OKTAPASSWORD=oktapassword
-* TOKEN=token
+** OKTALOGIN=oktausername
+** OKTAPASSWORD=oktapassword
+** TOKEN=token
 
 And put in your Canvas token without Bearer. Example: TOKEN=17~32131243413213123
 
@@ -43,7 +43,7 @@ Optional fields -
 * account_admin - boolean, set "false" or "f" to NOT set up as account admin (default is true)
 * field_admin - boolean, set "false" or "f" to NOT set up as field admin (default is true)
 NOTE: Currently will only return Federation ID and not set up as Field Admin, so no harm if left "false"
-* sf_id - *This does not currently function right now, but hope to build out in the future*
+* sf_id - **This does not currently function right now, but hope to build out in the future**
 
 ### Sample file
 
@@ -66,10 +66,10 @@ yarn start
 
 ### The goal...
 I do want this to be able to run for Field admins also... storing some notes about it here in case it happens in the future
-Not built out to set up a user in SF at this point, but *will* spit out the federated ID if field_admin is set to "true" or "t"
+Not built out to set up a user in SF at this point, but **will** spit out the federated ID if field_admin is set to "true" or "t"
 
 Optional Fields
-* sf_id - Salesforce Account ID (required for Field Admin setup)
+** sf_id - Salesforce Account ID (required for Field Admin setup)
     - ex. https://instructure.lightning.force.com/lightning/r/Account/001A000001FmoXJIAZ/view
     - ID = 001A000001FmoXJIAZ
 
