@@ -23,9 +23,9 @@ $ yarn install
 ```
 Create a file at the root level (in the folder field_admin_selenium) named ".env". add:
 
-** OKTALOGIN=oktausername
-** OKTAPASSWORD=oktapassword
-** TOKEN=token
+* OKTALOGIN=oktausername
+* OKTAPASSWORD=oktapassword
+* TOKEN=token
 
 And put in your Canvas token without Bearer. Example: TOKEN=17~32131243413213123
 
@@ -69,7 +69,7 @@ I do want this to be able to run for Field admins also... storing some notes abo
 Not built out to set up a user in SF at this point, but **will** spit out the federated ID if field_admin is set to "true" or "t"
 
 Optional Fields
-** sf_id - Salesforce Account ID (required for Field Admin setup)
+* sf_id - Salesforce Account ID (required for Field Admin setup)
     - ex. https://instructure.lightning.force.com/lightning/r/Account/001A000001FmoXJIAZ/view
     - ID = 001A000001FmoXJIAZ
 
