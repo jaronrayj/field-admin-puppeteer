@@ -35,6 +35,7 @@
 async function getFederatedID(samlResponseArray) {
   return new Promise(async (resolve, reject) => {
 
+    // IF USING THIS AGAIN will need to install chromedriver and selenium-webdriver
     // Requires
     const webdriver = require('selenium-webdriver'); // Selenium itself
     // const {

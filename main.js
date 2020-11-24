@@ -1,12 +1,4 @@
 require('dotenv').config()
-// require('chromedriver');
-
-// const {
-//     Builder,
-//     Key,
-//     By,
-//     until
-// } = require('selenium-webdriver');
 const axios = require('axios');
 const fs = require('fs');
 // const { domain } = require('process');

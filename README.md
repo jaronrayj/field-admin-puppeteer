@@ -1,7 +1,7 @@
 # field-admin-puppeteer
 **PLEASE READ ALL**
 
-This will run with Canvas apis and selenium to create users in Canvas, or add a login to their account and go through the field admin adding process. Your Salesforce token needs to be allowed to set up field admins for this to function.
+This will run with Canvas apis and puppeteer to create users in Canvas, or add a login to their account and go through the field admin adding process. Your Salesforce token needs to be allowed to set up field admins for this to function.
 
 It does require you to have push notifications turned on for Okta
 Verify as well, midway through it will ask you to accept that it's you trying to sign in.
@@ -12,7 +12,7 @@ This process _should_ also send the welcome email to the new admins and ask that
 ### One Time - Clone and Install and .env file setup
 Move to directory location of choice and:
 ```
-$ git clone git@github.com:jaronrayj/field-admin-selenium.git
+$ git clone git@github.com:jaronrayj/field-admin-puppeteer.git
 ```
 ```
 $ npm install
@@ -21,7 +21,7 @@ or
 ```
 $ yarn install
 ```
-Create a file at the root level (in the folder field_admin_selenium) named ".env". add (minus "[]"):
+Create a file at the root level (in the folder field_admin_puppeteer) named ".env". add (minus "[]"):
 
 * OKTA_USERNAME=[put your okta username here]
 * OKTA_PASSWORD=[okta password]
@@ -31,7 +31,7 @@ And put in your Canvas token without Bearer. Example: TOKEN=17~32131243413213123
 
 ### Each time CSV file structure (in no specific order)
 
-Add csv file to 'field_admin_selenium/csv-storage' folder. Program will ask you which file to choose.
+Add csv file to 'field_admin_puppeteer/csv-storage' folder. Program will ask you which file to choose.
 
 Required fields -
 * email - User email
