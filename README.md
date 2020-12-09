@@ -15,11 +15,13 @@ Move to directory location of choice and:
 $ git clone git@github.com:jaronrayj/field-admin-puppeteer.git
 ```
 ```
-$ PUPPETEER_PRODUCT=firefox npm install
+npm install
+<!-- for firefox $ PUPPETEER_PRODUCT=firefox npm install -->
 ```
 or
 ```
-$ PUPPETEER_PRODUCT=firefox yarn install
+yarn install
+<!-- for firefox $ PUPPETEER_PRODUCT=firefox yarn install -->
 ```
 Create a file at the root level (in the folder field_admin_puppeteer) named ".env". add (minus "[]"):
 
