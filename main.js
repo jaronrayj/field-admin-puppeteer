@@ -12,6 +12,8 @@ const getFed = require('./js/getFedId-headless');
 const setupAdmin = require('./js/setupAdmin');
 const randomString = require('./util/randomString');
 const removeLogins = require('./js/removeLogins');
+const addSamlAuth = require('./js/addSamlAuth');
+const deleteAuth = require('./js/deleteAuth');
 
 //pass axios object and value of the delay between requests in ms
 axiosThrottle.init(axios, 200)
@@ -39,6 +41,7 @@ if (token === undefined) {
 const jsonLocation = fs.readdirSync('./csv-storage')
 // Where all of the users will be stored
 const userBank = [];
+const authRemoval = [];
 
 let createUserOrLogin = new Promise((resolve, reject) => {
     // Through node asks what file to run through
@@ -77,6 +80,30 @@ let createUserOrLogin = new Promise((resolve, reject) => {
 
                         // todo struggling with no saml page, either get it to work with firefox or create saml auth to be deleted later
                         // todo keep array of saml configs to remove? check in auth settings first if it exists
+                        // Checking to see if they have a saml auth and creating one that will be deleted later if not present
+                        user.instance.get('/accounts/self/authentication_providers')
+                            .then(res => {
+                                let haveSaml = false
+                                res.data.forEach(auth => {
+                                    if (auth.auth_type === 'saml') {
+                                        haveSaml = true;
+                                    }
+                                });
+                                if (!haveSaml) {
+                                    addSamlAuth(user);
+                                }
+                                // setTimeout(() => {
+                                //     if (haveSaml) {
+                                //         let userWithSaml = {
+                                //             user: user
+                                //         };
+                                //         userWithSaml.auth = addSamlAuth(user);
+                                //         setTimeout(() => {
+                                //             authRemoval.push(userWithSaml);
+                                //         }, 2000);
+                                //     }
+                                // }, 2000);
+                            })
 
                         // Search for the user by login id
                         user.instance.get(`/accounts/self/users?search_term=${user.unique_id}&include[]=email`)
@@ -160,14 +187,14 @@ function sleep(ms) {
 
 async function getSamlOneByOne(user) {
     return new Promise((resolve, reject) => {
-            getSAMLResponse(user.domain, user.unique_id, user.password)
-                .then(function (samlResponse) {
-                    user.samlResponseEncoded = samlResponse
-                    // remove password field from JSON for security
-                    delete user.password;
-                    console.log(`Got SAML for ${user.email}`)
-                    resolve(user)
-                });
+        getSAMLResponse(user.domain, user.unique_id, user.password)
+            .then(function (samlResponse) {
+                user.samlResponseEncoded = samlResponse
+                // remove password field from JSON for security
+                delete user.password;
+                console.log(`Got SAML for ${user.email}`)
+                resolve(user)
+            });
     });
 }
 
@@ -182,6 +209,7 @@ function samlAndFedId(userBank) {
             // todo fix this to be more accurate since more than one user may process
             if (samlResults.length === userBank.length) {
                 removeLogins(userBank);
+                deleteAuth(userBank);
                 return resolve(samlResults)
             }
         });

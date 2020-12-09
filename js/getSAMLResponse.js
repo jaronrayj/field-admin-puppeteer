@@ -59,7 +59,7 @@ module.exports =
       var canvasInstance = "https://" + domain + "/login/canvas?global_includes=0";
       var samlInstance = "https://" + domain + "/login/saml?global_includes=0";
       // Debug/testing flags
-      const DEBUG = true; // Write more info to the console
+      const DEBUG = false; // Write more info to the console
       const SHOWFULLRESPONSE = false; // Used for debugging. This logs the entire response data to the console
       // Load the dev env variables 
       // There's no need to check if .env exists, dotenv will check this for you. 
@@ -136,10 +136,8 @@ module.exports =
       console.log("Getting SAML Response");
       // console.log("** You can ignore the follow error about Setting the NODE_TLS_REJECT_UNAUTHORIZED environment variable to '0' **");
       // console.log("");
-      // var page = await BROWSER.newPage();
-      // await page.goto(samlInstance, {
-      //   waitUntil: 'load',
-      // });
+      var page2 = await BROWSER.newPage();
+      await page2.goto(samlInstance);
       var page = await BROWSER.newPage();
       await page.goto(canvasInstance, {
         waitUntil: 'load',
