@@ -15,11 +15,11 @@ Move to directory location of choice and:
 $ git clone git@github.com:jaronrayj/field-admin-puppeteer.git
 ```
 ```
-$ npm install
+$ PUPPETEER_PRODUCT=firefox npm install
 ```
 or
 ```
-$ yarn install
+$ PUPPETEER_PRODUCT=firefox yarn install
 ```
 Create a file at the root level (in the folder field_admin_puppeteer) named ".env". add (minus "[]"):
 
@@ -27,7 +27,10 @@ Create a file at the root level (in the folder field_admin_puppeteer) named ".en
 * OKTA_PASSWORD=[okta password]
 * TOKEN=[Canvas token]
 
-And put in your Canvas token without Bearer. Example: TOKEN=17~32131243413213123
+And put in your Canvas token without Bearer. Example: 
+OKTA_USERNAME=jjohnson
+OKTA_PASSWORD=thisismypassword
+TOKEN=17~32131243413213123
 
 ### Each time CSV file structure (in no specific order)
 

@@ -59,13 +59,12 @@ module.exports =
       var canvasInstance = "https://" + domain + "/login/canvas?global_includes=0";
       var samlInstance = "https://" + domain + "/login/saml?global_includes=0";
       // Debug/testing flags
-      const DEBUG = false; // Write more info to the console
+      const DEBUG = true; // Write more info to the console
       const SHOWFULLRESPONSE = false; // Used for debugging. This logs the entire response data to the console
       // Load the dev env variables 
       // There's no need to check if .env exists, dotenv will check this for you. 
       // It will show a small warning which can be disabled when using this in production.
       DOTENV.config();
-      const PRODTOKEN = process.env.CANVAS_ADMIN_TOKEN;
       // This bypasses the SSL cert errors I was getting
       // Without this, I get 'RequestError: Error: unable to verify the first certificate'
       // We will get this error that can be igonred:
@@ -73,8 +72,47 @@ module.exports =
       // Possible fix https://stackoverflow.com/questions/31673587/error-unable-to-verify-the-first-certificate-in-nodejs/32440021#32440021
       process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
       // Log the instance and credentials if debugging
+      if (DEBUG === true) {
+        console.log("Canvas Instance: " + canvasInstance);
+        console.log("Username: " + username);
+        console.log("Password: " + password);
+      }
+
+      ///////////////////////////////////////////////////
+      // // This is the firefox setup
+      // const firefoxOptions = {
+      //   product: 'firefox',
+      //   extraPrefsFirefox: {
+      //     // Enable additional Firefox logging from its protocol implementation
+      //     // 'remote.log.level': 'Trace',
+      //   },
+      //   // Make browser logs visible
+      //   dumpio: true,
+      //   headless: false,
+      //   devtools: true
+      // };
+      // const firefoxProdOptions = {
+      //   product: 'firefox',
+      //   extraPrefsFirefox: {
+      //     // Enable additional Firefox logging from its protocol implementation
+      //     // 'remote.log.level': 'Trace',
+      //   },
+      //   // Make browser logs visible
+      //   dumpio: true,
+      //   headless: false,
+      // };
+      // // Launch the browser
+      // if (DEBUG === true) {
+      //   BROWSER = await PUPPETEER.launch(firefoxOptions); // Full bowser (non-Headless)
+      // } else {
+      //   BROWSER = await PUPPETEER.launch(firefoxProdOptions); // Headless 
+      // }
+
+      ///////////////////////////////////////////////////
+
+      // This is the regular chrome process
       if (DEBUG == true) {
-        console.log("Prod Token Used: " + PRODTOKEN)
+
         console.log("Canvas Instance: " + canvasInstance);
         console.log("Username: " + username);
         console.log("Password: " + password);
@@ -90,9 +128,11 @@ module.exports =
           headless: true
         }); // Headless 
       }
+      ///////////////////////////////////////////////////
       // Open a new (blank) page and go to my sandbox. 
       // Originally was waitUntil: 'networkidle0' from example code but load is the default
       // You can ignore the error NODE_TLS_REJECT_UNAUTHORIZED - we are ignoring SSL to make the process work
+      console.log(await BROWSER.version());
       console.log("Getting SAML Response");
       // console.log("** You can ignore the follow error about Setting the NODE_TLS_REJECT_UNAUTHORIZED environment variable to '0' **");
       // console.log("");
@@ -125,6 +165,7 @@ module.exports =
       // Once request interception is enabled, every request will stall unless it's continued, responded or aborted. 
       // For more info, see https://github.com/puppeteer/puppeteer/blob/v1.7.0/docs/api.md#pagesetrequestinterceptionvalue
       await page2.setRequestInterception(true);
+      console.log("made it here");
       // Process the response (when it comes as a result of going to the page).
       // The page is loaded following this definition
       page2.on('request', request2 => {
@@ -138,7 +179,7 @@ module.exports =
           var response_headers = response2.headers;
           var response_size = response_headers['content-length'];
           var response_body = response2.body;
-          if (SHOWFULLRESPONSE == true) {
+          if (SHOWFULLRESPONSE === true) {
             result.push({
               request_url,
               request_headers,
@@ -155,7 +196,7 @@ module.exports =
             samlResponse = samlRequest.SAMLResponse;
             // Log the response to the console if we are debugging
             console.log("");
-            if (DEBUG == true) {
+            if (DEBUG === true) {
               console.log("SAMLResponse:");
               console.log(samlResponse);
             }
@@ -163,7 +204,7 @@ module.exports =
             return resolve(encodeURI(samlResponse));
           }
           // Log the full response data (it is a lot) if that flag is set
-          if (SHOWFULLRESPONSE == true) {
+          if (SHOWFULLRESPONSE === true) {
             console.log(result);
           }
           // Let the process continue
