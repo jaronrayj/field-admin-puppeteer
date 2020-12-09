@@ -77,33 +77,58 @@ module.exports =
         console.log("Username: " + username);
         console.log("Password: " + password);
       }
-      const firefoxOptions = {
-        product: 'firefox',
-        extraPrefsFirefox: {
-          // Enable additional Firefox logging from its protocol implementation
-          // 'remote.log.level': 'Trace',
-        },
-        // Make browser logs visible
-        dumpio: true,
-        headless: false,
-        devtools: true
-      };
-      const firefoxProdOptions = {
-        product: 'firefox',
-        extraPrefsFirefox: {
-          // Enable additional Firefox logging from its protocol implementation
-          // 'remote.log.level': 'Trace',
-        },
-        // Make browser logs visible
-        dumpio: true,
-        headless: false,
-      };
-      // Launch the browser
-      if (DEBUG === true) {
-        BROWSER = await PUPPETEER.launch(firefoxOptions); // Full bowser (non-Headless)
-      } else {
-        BROWSER = await PUPPETEER.launch(firefoxProdOptions); // Headless 
+
+      ///////////////////////////////////////////////////
+      // // This is the firefox setup
+      // const firefoxOptions = {
+      //   product: 'firefox',
+      //   extraPrefsFirefox: {
+      //     // Enable additional Firefox logging from its protocol implementation
+      //     // 'remote.log.level': 'Trace',
+      //   },
+      //   // Make browser logs visible
+      //   dumpio: true,
+      //   headless: false,
+      //   devtools: true
+      // };
+      // const firefoxProdOptions = {
+      //   product: 'firefox',
+      //   extraPrefsFirefox: {
+      //     // Enable additional Firefox logging from its protocol implementation
+      //     // 'remote.log.level': 'Trace',
+      //   },
+      //   // Make browser logs visible
+      //   dumpio: true,
+      //   headless: false,
+      // };
+      // // Launch the browser
+      // if (DEBUG === true) {
+      //   BROWSER = await PUPPETEER.launch(firefoxOptions); // Full bowser (non-Headless)
+      // } else {
+      //   BROWSER = await PUPPETEER.launch(firefoxProdOptions); // Headless 
+      // }
+
+      ///////////////////////////////////////////////////
+
+      // This is the regular chrome process
+      if (DEBUG == true) {
+
+        console.log("Canvas Instance: " + canvasInstance);
+        console.log("Username: " + username);
+        console.log("Password: " + password);
       }
+      // Launch the browser
+      if (DEBUG == true) {
+        BROWSER = await PUPPETEER.launch({
+          headless: false,
+          devtools: true
+        }, ); // Full bowser (non-Headless)
+      } else {
+        BROWSER = await PUPPETEER.launch({
+          headless: true
+        }); // Headless 
+      }
+      ///////////////////////////////////////////////////
       // Open a new (blank) page and go to my sandbox. 
       // Originally was waitUntil: 'networkidle0' from example code but load is the default
       // You can ignore the error NODE_TLS_REJECT_UNAUTHORIZED - we are ignoring SSL to make the process work
