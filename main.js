@@ -20,6 +20,11 @@ const oktausername = process.env.OKTALOGIN
 const oktapassword = process.env.OKTAPASSWORD
 const token = process.env.TOKEN
 
+if (token === undefined) {
+    console.log("Set up your .env by following the README to continue");
+    return process.exit();
+}
+
 // Have this change based off of file imported
 // const csv = [{
 //     domain: 'jjohnson.instructure.com',
@@ -124,7 +129,6 @@ let createUserOrLogin = new Promise((resolve, reject) => {
                                         }
                                     });
                                     count += 1;
-                                    console.log("🚀 ~ file: main.js ~ line 129 ~ createUserOrLogin ~ jsonObj.length", jsonObj.length)
                                     if (jsonObj.length === count) {
                                         resolve(userBank);
                                     }
