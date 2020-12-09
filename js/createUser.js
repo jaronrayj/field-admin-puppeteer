@@ -1,5 +1,5 @@
 module.exports =
-    function createUser(user, instance) {
+    function createUser(user) {
         let username;
         if (!user.full_name) {
             username = user.email
@@ -20,7 +20,7 @@ module.exports =
                 password: user.password
             }
         };
-        instance.post(`/accounts/self/users`, params)
+        user.instance.post(`/accounts/self/users`, params)
             .then(async function (response) {
                 console.log(`${username} user account created`);
             })

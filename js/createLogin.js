@@ -1,9 +1,9 @@
 const randomString = require('../util/randomString');
 
 module.exports =
-    async function createLogin(user, instance) {
+    async function createLogin(user) {
 
-        instance.post(`/accounts/self/logins`, {
+        user.instance.post(`/accounts/self/logins`, {
                 user: {
                     id: user.id,
                 },

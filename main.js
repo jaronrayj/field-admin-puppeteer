@@ -36,6 +36,7 @@ const jsonLocation = fs.readdirSync('./csv-storage')
 const userBank = [];
 
 let createUserOrLogin = new Promise((resolve, reject) => {
+    // Through node asks what file to run through
     inq.prompt([{
             type: "list",
             message: "Which csv has the data you want to upload?",
@@ -45,12 +46,12 @@ let createUserOrLogin = new Promise((resolve, reject) => {
         .then(async inqRes => {
 
             csv2json()
+                // From selected file will start running process
                 .fromFile(`./csv-storage/${inqRes.jsonFile}`)
                 .then(jsonObj => {
                     let count = 0;
                     jsonObj.forEach(user => {
                         // api creds setup
-                        user.deleteLogin = false;
                         instance = axios.create({
                             baseURL: `https://${user.domain}/api/v1`,
                             headers: {
@@ -67,41 +68,66 @@ let createUserOrLogin = new Promise((resolve, reject) => {
                         }
                         let password = randomString();
                         user.password = password;
+                        user.instance = instance;
+
+                        // todo struggling with no saml page, either get it to work with firefox or create saml auth to be deleted later
+                        // todo keep array of saml configs to remove? check in auth settings first if it exists
 
                         // Search for the user by login id
-                        instance.get(`/accounts/self/users?search_term=${user.unique_id}&include[]=email`)
+                        user.instance.get(`/accounts/self/users?search_term=${user.unique_id}&include[]=email`)
                             .then(async response => {
+                                user.multipleAccounts = false;
                                 if (response.data.length === 0) {
                                     // User doesn't exist, creating
-                                    createUser(user, instance);
+                                    createUser(user);
                                     userBank.push(user);
-                                } else if (response.data.length === 1 && response.data[0].email === user.email) {
-                                    // Check if the one user that exists has the same email to verify
-                                    console.log(`${user.unique_id}'s account exists`);
-                                    if (!user.account_admin || user.account_admin.toLowerCase() !== "false" || user.account_admin.toLowerCase() !== "f") {
-                                        setupAdmin(response.data[0].id, instance)
-                                    } else {
-                                        console.log(`Not setting up ${user.unique_id} as an account admin`);
-                                    }
-                                    if (!user.field_admin || user.field_admin.toLowerCase() !== "false" || user.field_admin.toLowerCase() !== "f") {
-                                        let num = Math.floor(Math.random() * 5000)
-                                        user.unique_id = `fieldadminsetup_removeme${num}`;
-                                        user.id = response.data[0].id;
-                                        // Create a login that will be deleted later
-                                        user.deleteLogin = true;
-                                        createLogin(user, instance);
-                                        user.field_admin = true;
-                                        userBank.push(user);
-                                    } else {
-                                        console.log(`Not setting up ${user.unique_id} as a field admin`);
-                                    }
                                 } else {
-                                    // More than one users and email did not match not changing the users
-                                    console.log(`Could not verify correct user for ${user.unique_id}, not setting up with anything. Multiple users with login or email.`);
-                                }
-                                count += 1;
-                                if (jsonObj.length === count) {
-                                    resolve(userBank);
+                                    if (response.data.length > 1) {
+                                        console.log(`${user.email} has multiple accounts, setting up ${response.data.length} accounts for them`);
+                                        user.multipleAccounts = true;
+                                    }
+                                    response.data.forEach(canvasUser => {
+                                        // Check if the one user that exists has the same email to verify
+                                        console.log(`${user.email}'s account exists`);
+
+                                        // toLowercase fails if left blank, checking that first, left blank will be set up
+                                        if (user.account_admin) {
+                                            if (user.account_admin.toLowerCase() !== "false" || user.account_admin.toLowerCase() !== "f" || !user.multipleAccounts) {
+                                                // Unless says "false" or "f" will set up as account_admin or if have multiple accounts and cannot verify
+                                                setupAdmin(canvasUser.id, user)
+                                            } else {
+                                                console.log(`Not setting up ${user.unique_id} as an account admin`);
+                                            }
+                                        } else {
+                                            setupAdmin(canvasUser.id, user)
+                                        }
+                                        // toLowercase fails if left blank, checking that first, left blank will be set up
+                                        if (user.field_admin) {
+                                            if (user.field_admin.toLowerCase() !== "false" || user.field_admin.toLowerCase() !== "f") {
+                                                // Unless says "false" or "f" will process to get federation ID
+                                                let num = Math.floor(Math.random() * 5000)
+                                                user.unique_id = `fieldadminsetup_removeme${num}`;
+                                                user.id = canvasUser.id;
+                                                // Create a login that will be deleted later
+                                                createLogin(user);
+                                                userBank.push(user);
+                                            } else {
+                                                console.log(`Not setting up ${user.unique_id} as a field admin`);
+                                            }
+                                        } else {
+                                            let num = Math.floor(Math.random() * 5000)
+                                            user.unique_id = `fieldadminsetup_removeme${num}`;
+                                            user.id = canvasUser.id;
+                                            // Create a login that will be deleted later
+                                            createLogin(user);
+                                            userBank.push(user);
+                                        }
+                                    });
+                                    count += 1;
+                                    console.log("🚀 ~ file: main.js ~ line 129 ~ createUserOrLogin ~ jsonObj.length", jsonObj.length)
+                                    if (jsonObj.length === count) {
+                                        resolve(userBank);
+                                    }
                                 }
                             })
                     })
@@ -110,19 +136,17 @@ let createUserOrLogin = new Promise((resolve, reject) => {
 })
 
 createUserOrLogin
-    .then(users => {
+    .then(userBank => {
         // Get SAML Responses back from adminconsole page
-        samlAndFedId(users);
+        samlAndFedId(userBank);
     })
     .catch(err => {
         console.log(err);
     })
 
-async function asyncForEach(array, conditional, callback, ) {
+async function asyncForEach(array, callback) {
     for (let i = 0; i < array.length; i++) {
-        if (array[i][conditional]) {
-            await callback(array[i], i, array);
-        }
+        await callback(array[i], i, array);
     }
 }
 
@@ -132,19 +156,14 @@ function sleep(ms) {
 
 async function getSamlOneByOne(user) {
     return new Promise((resolve, reject) => {
-        instance = axios.create({
-            baseURL: `https://${user.domain}/api/v1`,
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-        getSAMLResponse(user.domain, user.unique_id, user.password)
-            .then(function (samlResponse) {
-                user.samlResponseEncoded = samlResponse
-                console.log(`Got SAML for ${user.email}`)
-                resolve(user)
-            });
-
+            getSAMLResponse(user.domain, user.unique_id, user.password)
+                .then(function (samlResponse) {
+                    user.samlResponseEncoded = samlResponse
+                    // remove password field from JSON for security
+                    delete user.password;
+                    console.log(`Got SAML for ${user.email}`)
+                    resolve(user)
+                });
     });
 }
 
@@ -152,18 +171,19 @@ async function getSamlOneByOne(user) {
 function samlAndFedId(userBank) {
     var samlResults = []
     var getSamlResponses = new Promise(resolve => {
-        asyncForEach(userBank, "field_admin", async function (user) {
+        asyncForEach(userBank, async function (user) {
             await getSamlOneByOne(user).then(function (result) {
                 samlResults.push(result)
             })
+            // todo fix this to be more accurate since more than one user may process
             if (samlResults.length === userBank.length) {
                 removeLogins(userBank);
-                console.log("Triple checked that all extra logins removed^");
                 return resolve(samlResults)
             }
         });
     })
     getSamlResponses.then(results => {
+        console.log("Triple checked that all extra logins removed^");
         // Get federated id from Salesforce
         getFed(results).then(function (res) {
             // Write results to json file in same directory
