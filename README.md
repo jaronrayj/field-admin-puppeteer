@@ -16,12 +16,12 @@ $ git clone git@github.com:jaronrayj/field-admin-puppeteer.git
 ```
 ```
 npm install
-<!-- for firefox $ PUPPETEER_PRODUCT=firefox npm install -->
+<!-- for firefox, not working yet $ PUPPETEER_PRODUCT=firefox npm install -->
 ```
 or
 ```
 yarn install
-<!-- for firefox $ PUPPETEER_PRODUCT=firefox yarn install -->
+<!-- for firefox, not working yet $ PUPPETEER_PRODUCT=firefox yarn install -->
 ```
 Create a file at the root level (in the folder field_admin_puppeteer) named ".env". add (minus "[]"):
 
