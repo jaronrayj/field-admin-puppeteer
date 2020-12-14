@@ -12,6 +12,8 @@ const getFed = require('./js/getFedId-headless');
 const setupAdmin = require('./js/setupAdmin');
 const randomString = require('./util/randomString');
 const removeLogins = require('./js/removeLogins');
+const addSamlAuth = require('./js/addSamlAuth');
+const deleteAuth = require('./js/deleteAuth');
 
 //pass axios object and value of the delay between requests in ms
 axiosThrottle.init(axios, 200)
@@ -39,6 +41,7 @@ if (token === undefined) {
 const jsonLocation = fs.readdirSync('./csv-storage')
 // Where all of the users will be stored
 const userBank = [];
+const authRemoval = [];
 
 let createUserOrLogin = new Promise((resolve, reject) => {
     // Through node asks what file to run through
@@ -71,12 +74,22 @@ let createUserOrLogin = new Promise((resolve, reject) => {
                         } else {
                             console.log("missing email or login_id for user, not creating.");
                         }
-                        let password = randomString();
-                        user.password = password;
+                        user.password = randomString()
                         user.instance = instance;
 
-                        // todo struggling with no saml page, either get it to work with firefox or create saml auth to be deleted later
-                        // todo keep array of saml configs to remove? check in auth settings first if it exists
+                        // Checking to see if they have a saml auth and creating one that will be deleted later if not present
+                        user.instance.get('/accounts/self/authentication_providers')
+                            .then(res => {
+                                let haveSaml = false
+                                res.data.forEach(auth => {
+                                    if (auth.auth_type === 'saml') {
+                                        haveSaml = true;
+                                    }
+                                });
+                                if (!haveSaml) {
+                                    addSamlAuth(user);
+                                }
+                            })
 
                         // Search for the user by login id
                         user.instance.get(`/accounts/self/users?search_term=${user.unique_id}&include[]=email`)
@@ -87,49 +100,38 @@ let createUserOrLogin = new Promise((resolve, reject) => {
                                     createUser(user);
                                     userBank.push(user);
                                 } else {
+                                    console.log(`${user.email}'s account exists`);
                                     if (response.data.length > 1) {
                                         console.log(`${user.email} has multiple accounts, setting up ${response.data.length} accounts for them`);
                                         user.multipleAccounts = true;
                                     }
                                     response.data.forEach(canvasUser => {
-                                        // Check if the one user that exists has the same email to verify
-                                        console.log(`${user.email}'s account exists`);
-
+                                        console.log("🚀 ~ file: main.js ~ line 109 ~ createUserOrLogin ~ canvasUser", canvasUser)
                                         // toLowercase fails if left blank, checking that first, left blank will be set up
                                         if (user.account_admin) {
                                             if (user.account_admin.toLowerCase() !== "false" || user.account_admin.toLowerCase() !== "f" || !user.multipleAccounts) {
                                                 // Unless says "false" or "f" will set up as account_admin or if have multiple accounts and cannot verify
                                                 setupAdmin(canvasUser.id, user)
                                             } else {
-                                                console.log(`Not setting up ${user.unique_id} as an account admin`);
+                                                console.log(`Not setting up ${user.unique_id} as an account admin, may have multiple user accounts.`);
                                             }
                                         } else {
                                             setupAdmin(canvasUser.id, user)
                                         }
-                                        // toLowercase fails if left blank, checking that first, left blank will be set up
-                                        if (user.field_admin) {
-                                            if (user.field_admin.toLowerCase() !== "false" || user.field_admin.toLowerCase() !== "f") {
-                                                // Unless says "false" or "f" will process to get federation ID
-                                                let num = Math.floor(Math.random() * 5000)
-                                                user.unique_id = `fieldadminsetup_removeme${num}`;
-                                                user.id = canvasUser.id;
-                                                // Create a login that will be deleted later
-                                                createLogin(user);
-                                                userBank.push(user);
-                                            } else {
-                                                console.log(`Not setting up ${user.unique_id} as a field admin`);
-                                            }
-                                        } else {
-                                            let num = Math.floor(Math.random() * 5000)
-                                            user.unique_id = `fieldadminsetup_removeme${num}`;
-                                            user.id = canvasUser.id;
-                                            // Create a login that will be deleted later
-                                            createLogin(user);
-                                            userBank.push(user);
-                                        }
+                                        // Setting up a new login for the user to return to sign in as user to get federated ID.
+                                        let num = Math.floor(Math.random() * 5000)
+                                        user.unique_id = `fieldadminsetup_removeme${num}`;
+                                        user.id = canvasUser.id;
+                                        console.log("🚀 ~ file: main.js ~ line 131 ~ createUserOrLogin ~ canvasUser.id", canvasUser.id)
+                                        console.log("🚀 ~ file: main.js ~ line 131 ~ createUserOrLogin ~ user", user.id)
+                                        console.log("🚀 ~ file: main.js ~ line 127 ~ createUserOrLogin ~ user", user)
+                                        // Create a login that will be deleted later
+                                        createLogin(user);
+                                        userBank.push(user);
                                     });
                                     count += 1;
                                     if (jsonObj.length === count) {
+                                        console.log("🚀 ~ file: main.js ~ line 146 ~ createUserOrLogin ~ userBank", userBank)
                                         resolve(userBank);
                                     }
                                 }
@@ -160,14 +162,12 @@ function sleep(ms) {
 
 async function getSamlOneByOne(user) {
     return new Promise((resolve, reject) => {
-            getSAMLResponse(user.domain, user.unique_id, user.password)
-                .then(function (samlResponse) {
-                    user.samlResponseEncoded = samlResponse
-                    // remove password field from JSON for security
-                    delete user.password;
-                    console.log(`Got SAML for ${user.email}`)
-                    resolve(user)
-                });
+        getSAMLResponse(user.domain, user.unique_id, user.password)
+            .then(samlResponse => {
+                user.samlResponseEncoded = samlResponse
+                console.log(`Got SAML for ${user.email}`)
+                resolve(user)
+            });
     });
 }
 
@@ -179,15 +179,18 @@ function samlAndFedId(userBank) {
             await getSamlOneByOne(user).then(function (result) {
                 samlResults.push(result)
             })
-            // todo fix this to be more accurate since more than one user may process
             if (samlResults.length === userBank.length) {
+                // remove password field from JSON for security
+                userBank.forEach(user => {
+                    delete user.password;
+                });
                 removeLogins(userBank);
+                deleteAuth(userBank);
                 return resolve(samlResults)
             }
         });
     })
     getSamlResponses.then(results => {
-        console.log("Triple checked that all extra logins removed^");
         // Get federated id from Salesforce
         getFed(results).then(function (res) {
             // Write results to json file in same directory
