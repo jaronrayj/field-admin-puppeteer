@@ -75,7 +75,7 @@ module.exports =
       await page.waitForTimeout(3000);
       // Sending push notification, needs to be approved by phone
       await page.click('input.button.button-primary');
-      console.log("Sign into okta with push notification");
+      console.log("Sign into okta with push notification, you have 10 min until process errors out");
       // set timeout to 10 min as that's the cap for push notification
       await page.setDefaultTimeout(600000)
       await page.waitForNavigation(); // Wait for Navigation
