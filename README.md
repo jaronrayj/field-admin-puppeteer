@@ -13,11 +13,11 @@ Move to directory location of choice and:
 $ git clone git@github.com:jaronrayj/field-admin-puppeteer.git
 ```
 ```
-npm install
+$ npm install
 ```
 or
 ```
-yarn install
+$ yarn install
 ```
 Create a file at the root level (in the folder field_admin_puppeteer) named ".env" and input these values but with your own info:
 ```
@@ -61,11 +61,11 @@ example4@example.com,domain.instructure.com
 ### To Run
 Move to main directory
 ```
-npm start
+$ npm start
 ```
 or
 ```
-yarn start
+$ yarn start
 ```
 
 ### The Goal...
