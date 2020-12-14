@@ -6,7 +6,6 @@ const {
 
 module.exports =
     function removeLogins(userBank) {
-        console.log("🚀 ~ file: removeLogins.js ~ line 9 ~ removeLogins ~ userBank", userBank)
         userBank.forEach(user => {
             // Search any users with "fieldadminsetup_removeme"
             user.instance.get(`/accounts/self/users?search_term=fieldadminsetup_removeme`)

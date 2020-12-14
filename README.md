@@ -1,12 +1,10 @@
-# field-admin-puppeteer
 **PLEASE READ ALL**
 
-This will run with Canvas apis and puppeteer to create users in Canvas, or add a login to their account and go through the field admin adding process. Your Salesforce token needs to be allowed to set up field admins for this to function.
+This will run with Canvas APIs and Puppeteer to create users in Canvas, or add a login to their account and go through the field admin adding process. It will spit out a Federation ID for every single user at this point, even if they have multiple accounts already set up in Canvas. By default it will also set up each user as an account admin unless csv states otherwise (does not work for multiple user accounts already set up).
 
-It does require you to have push notifications turned on for Okta
-Verify as well, midway through it will ask you to accept that it's you trying to sign in.
+It does require you to have push notifications turned on for _Okta Verify_ as well, midway through it will ask you to accept that it's you trying to sign in.
 
-This process _should_ also send the welcome email to the new admins and ask that they set up a password for the first time.
+If creating a user this process _should_ also send the welcome email to the new users and ask that they set up a password for the first time.
 
 ## Prereqs
 ### One Time - Clone and Install and .env file setup
@@ -16,25 +14,18 @@ $ git clone git@github.com:jaronrayj/field-admin-puppeteer.git
 ```
 ```
 npm install
-<!-- for firefox, not working yet $ PUPPETEER_PRODUCT=firefox npm install -->
 ```
 or
 ```
 yarn install
-<!-- for firefox, not working yet $ PUPPETEER_PRODUCT=firefox yarn install -->
 ```
-Create a file at the root level (in the folder field_admin_puppeteer) named ".env". add (minus "[]"):
-
-* OKTA_USERNAME=[put your okta username here]
-* OKTA_PASSWORD=[okta password]
-* TOKEN=[Canvas token]
-
-And put in your Canvas token without Bearer. Example: 
+Create a file at the root level (in the folder field_admin_puppeteer) named ".env" and input these values but with your own info:
+```
 OKTA_USERNAME=jjohnson
 OKTA_PASSWORD=thisismypassword
 TOKEN=17~32131243413213123
-
-### Each time CSV file structure (in no specific order)
+```
+### CSV File Structure (in no specific order)
 
 Add csv file to 'field_admin_puppeteer/csv-storage' folder. Program will ask you which file to choose.
 
@@ -44,22 +35,30 @@ Required fields -
 
 Optional fields -
 * full_name - User's full name to create account (default is email)
-* login_id - User's login_id (default is email)
+* login_id - User's login_id, will only set up if user does not exist already (default is email)
 * account_admin - boolean, set "false" or "f" to NOT set up as account admin (default is true)
-* field_admin - boolean, set "false" or "f" to NOT set up as field admin (default is true)
-NOTE: Currently will only return Federation ID and not set up as Field Admin, so no harm if left "false"
 * sf_id - **This does not currently function right now, but hope to build out in the future**
 
-### Sample file
+### Sample File
 
 ```
-email,domain,full_name,login_id,sf_id,field_admin,account_admin
-example@example.com,domain.instructure.com,Jaron Johnson,jjohnson,001A000001FmoXJIAZ,T,F
-example2@example.com,domain.instructure.com,Not Jaron,,001A000001FmoXJIAZ,f,t
-example3@example.com,domain.instructure.com,,jokes,001A000001FmoXJIAZ,true,false
-example4@example.com,domain.instructure.com,,,001A000001FmoXJIAZ,TRUE,FALSE
+email,domain,full_name,login_id,account_admin,sf_id
+example@example.com,domain.instructure.com,Jaron Johnson,jjohnson,T,
+example2@example.com,domain.instructure.com,Not Jaron,,f,https://instructure.lightning.force.com/lightning/r/Contact/003A000001dNHupIAG/view
+example3@example.com,domain.instructure.com,,jokes,true,
+example4@example.com,domain.instructure.com,,,TRUE,
 ```
-### To run
+### Required Fields ONLY Sample File 
+Will create users, set up as account admin and return federation ids, can add any additional fields if desired.
+
+```
+email,domain
+example@example.com,domain.instructure.com
+example2@example.com,domain.instructure.com
+example3@example.com,domain.instructure.com
+example4@example.com,domain.instructure.com
+```
+### To Run
 Move to main directory
 ```
 npm start
@@ -69,12 +68,7 @@ or
 yarn start
 ```
 
-### The goal...
-I do want this to be able to run for Field admins also... storing some notes about it here in case it happens in the future
+### The Goal...
+I do want this to be able to run for Field admins also... 
 Not built out to set up a user in SF at this point, but **will** spit out the federated ID by default right now.
-
-Optional Fields
-* sf_id - Salesforce Account ID (required for Field Admin setup)
-    - ex. https://instructure.lightning.force.com/lightning/r/Account/001A000001FmoXJIAZ/view
-    - ID = 001A000001FmoXJIAZ
 
