@@ -132,7 +132,7 @@ module.exports =
       // Open a new (blank) page and go to my sandbox. 
       // Originally was waitUntil: 'networkidle0' from example code but load is the default
       // You can ignore the error NODE_TLS_REJECT_UNAUTHORIZED - we are ignoring SSL to make the process work
-      console.log(await BROWSER.version());
+      // console.log(await BROWSER.version());
       console.log("Getting SAML Response");
       // console.log("** You can ignore the follow error about Setting the NODE_TLS_REJECT_UNAUTHORIZED environment variable to '0' **");
       // console.log("");
@@ -163,7 +163,6 @@ module.exports =
       // Once request interception is enabled, every request will stall unless it's continued, responded or aborted. 
       // For more info, see https://github.com/puppeteer/puppeteer/blob/v1.7.0/docs/api.md#pagesetrequestinterceptionvalue
       await page2.setRequestInterception(true);
-      console.log("made it here");
       // Process the response (when it comes as a result of going to the page).
       // The page is loaded following this definition
       page2.on('request', request2 => {
