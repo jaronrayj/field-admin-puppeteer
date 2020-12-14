@@ -80,7 +80,7 @@ module.exports =
       await page.setDefaultTimeout(600000)
       await page.waitForNavigation(); // Wait for Navigation
       console.log("Thanks for accepting push notification! Running fed ids.");
-      // setting timeout backto 30 seconds
+      // setting timeout back to 30 seconds
       await page.setDefaultTimeout(30000)
       await page.waitForTimeout(5000);
 
@@ -113,6 +113,7 @@ module.exports =
           console.log("getFedId -> fedId", fedId)
         }
         user.federatedId = fedId;
+        console.log(`Got ${i + 1} Fed Id(s) out of ${samlResponseArray.length}.`);
       }
       console.log("Finished processing Federated IDs");
       await BROWSER.close();

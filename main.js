@@ -93,45 +93,49 @@ let createUserOrLogin = new Promise((resolve, reject) => {
 
                         // Search for the user by login id
                         user.instance.get(`/accounts/self/users?search_term=${user.unique_id}&include[]=email`)
-                            .then(async response => {
+                            .then(async res => {
                                 user.multipleAccounts = false;
-                                if (response.data.length === 0) {
+                                if (res.data.length === 0) {
                                     // User doesn't exist, creating
                                     createUser(user);
                                     userBank.push(user);
                                 } else {
                                     console.log(`${user.email}'s account exists`);
-                                    if (response.data.length > 1) {
-                                        console.log(`${user.email} has multiple accounts, setting up ${response.data.length} accounts for them`);
+                                    if (res.data.length > 1) {
+                                        console.log(`${user.email} has multiple accounts, setting up ${res.data.length} accounts for them`);
                                         user.multipleAccounts = true;
                                     }
-                                    response.data.forEach(canvasUser => {
-                                        console.log("🚀 ~ file: main.js ~ line 109 ~ createUserOrLogin ~ canvasUser", canvasUser)
-                                        // toLowercase fails if left blank, checking that first, left blank will be set up
-                                        if (user.account_admin) {
-                                            if (user.account_admin.toLowerCase() !== "false" || user.account_admin.toLowerCase() !== "f" || !user.multipleAccounts) {
+                                    res.data.forEach(canvasUser => {
+                                        // Creating new user so to not overwrite previous array data
+                                        const newUser = {
+                                            email: user.email,
+                                            domain: user.domain,
+                                            password: user.password,
+                                            instance: user.instance,
+                                            multipleAccounts: user.multipleAccounts,
+                                            account_admin: user.account_admin,
+                                            sf_url: user.sf_url
+                                        }
+                                        if (newUser.account_admin) {
+                                            if (newUser.account_admin.toLowerCase() !== "false" || newUser.account_admin.toLowerCase() !== "f" || !newUser.multipleAccounts) {
                                                 // Unless says "false" or "f" will set up as account_admin or if have multiple accounts and cannot verify
-                                                setupAdmin(canvasUser.id, user)
+                                                setupAdmin(canvasUser.id, newUser)
                                             } else {
-                                                console.log(`Not setting up ${user.unique_id} as an account admin, may have multiple user accounts.`);
+                                                console.log(`Not setting up ${newUser.unique_id} as an account admin, or can't verify correct user.`);
                                             }
                                         } else {
-                                            setupAdmin(canvasUser.id, user)
+                                            setupAdmin(canvasUser.id, newUser)
                                         }
                                         // Setting up a new login for the user to return to sign in as user to get federated ID.
                                         let num = Math.floor(Math.random() * 5000)
-                                        user.unique_id = `fieldadminsetup_removeme${num}`;
-                                        user.id = canvasUser.id;
-                                        console.log("🚀 ~ file: main.js ~ line 131 ~ createUserOrLogin ~ canvasUser.id", canvasUser.id)
-                                        console.log("🚀 ~ file: main.js ~ line 131 ~ createUserOrLogin ~ user", user.id)
-                                        console.log("🚀 ~ file: main.js ~ line 127 ~ createUserOrLogin ~ user", user)
+                                        newUser.unique_id = `fieldadminsetup_removeme${num}`;
+                                        newUser.id = canvasUser.id;
                                         // Create a login that will be deleted later
-                                        createLogin(user);
-                                        userBank.push(user);
+                                        createLogin(newUser);
+                                        userBank.push(newUser);
                                     });
                                     count += 1;
                                     if (jsonObj.length === count) {
-                                        console.log("🚀 ~ file: main.js ~ line 146 ~ createUserOrLogin ~ userBank", userBank)
                                         resolve(userBank);
                                     }
                                 }
