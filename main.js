@@ -116,12 +116,12 @@ let createUserOrLogin = new Promise((resolve, reject) => {
                                             account_admin: user.account_admin,
                                             sf_url: user.sf_url
                                         }
-                                        if (newUser.account_admin) {
-                                            if (newUser.account_admin.toLowerCase() !== "false" || newUser.account_admin.toLowerCase() !== "f" || !newUser.multipleAccounts) {
-                                                // Unless says "false" or "f" will set up as account_admin or if have multiple accounts and cannot verify
-                                                setupAdmin(canvasUser.id, newUser)
+                                        if (user.account_admin) {
+                                            // Unless says "false" or "f" will set up as account_admin or if have multiple accounts and cannot verify
+                                            if (user.account_admin.toLowerCase() === "false" && !user.multipleAccounts) {
+                                                console.log(`Not setting up ${user.unique_id} as an account admin, or multiple user accounts.`);
                                             } else {
-                                                console.log(`Not setting up ${newUser.unique_id} as an account admin, or can't verify correct user.`);
+                                                setupAdmin(canvasUser.id, newUser)
                                             }
                                         } else {
                                             setupAdmin(canvasUser.id, newUser)
@@ -136,6 +136,10 @@ let createUserOrLogin = new Promise((resolve, reject) => {
                                     });
                                     count += 1;
                                     if (jsonObj.length === count) {
+                                        fs.writeFile('supportAdmins.json', JSON.stringify(userBank, null, 2), function (err) {
+                                            if (err) return console.log(err);
+                                            console.log('written to json here: supportAdmins.json');
+                                        });
                                         resolve(userBank);
                                     }
                                 }

@@ -2,7 +2,7 @@
 
 This will run with Canvas APIs and Puppeteer to create users in Canvas, or add a login to their account and go through the field admin adding process. It will spit out a Federation ID for every single user at this point, even if they have multiple accounts already set up in Canvas. By default it will also set up each user as an account admin unless csv states otherwise (does not work for multiple user accounts already set up).
 
-It does require you to have push notifications turned on for _Okta Verify_ as well, midway through it will ask you to accept that it's you trying to sign in.
+It does require you to have push notifications turned on for *Okta Verify* as well, midway through it will ask you to accept that it's you trying to sign in.
 
 If creating a user this process _should_ also send the welcome email to the new users and ask that they set up a password for the first time.
 
@@ -36,7 +36,7 @@ Required fields -
 Optional fields -
 * full_name - User's full name to create account (default is email)
 * login_id - User's login_id, will only set up if user does not exist already (default is email)
-* account_admin - boolean, set "false" or "f" to NOT set up as account admin (default is true)
+* account_admin - boolean, set "false" to NOT set up as account admin (default is true)
 * sf_id - **This does not currently function right now, but hope to build out in the future**
 
 ### Sample File
