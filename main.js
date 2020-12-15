@@ -74,7 +74,7 @@ let createUserOrLogin = new Promise((resolve, reject) => {
                         } else {
                             console.log("missing email or login_id for user, not creating.");
                         }
-                        user.password = randomString()
+                        user.password = randomString(8)
                         user.instance = instance;
 
                         // Checking to see if they have a saml auth and creating one that will be deleted later if not present
