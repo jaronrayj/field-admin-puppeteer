@@ -1,3 +1,5 @@
+const setupAdmin = require("./setupAdmin");
+
 module.exports =
     function createUser(user) {
         let username;
@@ -23,6 +25,16 @@ module.exports =
         user.instance.post(`/accounts/self/users`, params)
             .then(async function (response) {
                 console.log(`${username} user account created`);
+                if (user.account_admin) {
+                    // Unless says "false" or "f" will set up as account_admin or if have multiple accounts and cannot verify
+                    if (user.account_admin.toLowerCase() === "false") {
+                        console.log(`Not setting up ${user.unique_id} as an account admin, or multiple user accounts.`);
+                    } else {
+                        setupAdmin(response.data.id, user)
+                    }
+                } else {
+                    setupAdmin(response.data.id, user)
+                }
             })
             .catch(function (error) {
                 console.log(error);

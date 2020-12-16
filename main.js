@@ -98,6 +98,8 @@ let createUserOrLogin = new Promise((resolve, reject) => {
                                 if (res.data.length === 0) {
                                     // User doesn't exist, creating
                                     createUser(user);
+                                    user.multipleAccounts = false;
+
                                     userBank.push(user);
                                 } else {
                                     console.log(`${user.email}'s account exists`);
@@ -134,14 +136,14 @@ let createUserOrLogin = new Promise((resolve, reject) => {
                                         createLogin(newUser);
                                         userBank.push(newUser);
                                     });
-                                    count += 1;
-                                    if (jsonObj.length === count) {
-                                        fs.writeFile('supportAdmins.json', JSON.stringify(userBank, null, 2), function (err) {
-                                            if (err) return console.log(err);
-                                            console.log('written to json here: supportAdmins.json');
-                                        });
-                                        resolve(userBank);
-                                    }
+                                }
+                                count += 1;
+                                if (jsonObj.length === count) {
+                                    fs.writeFile('supportAdmins.json', JSON.stringify(userBank, null, 2), function (err) {
+                                        if (err) return console.log(err);
+                                        console.log('written to json here: supportAdmins.json');
+                                    });
+                                    resolve(userBank);
                                 }
                             })
                     })
@@ -178,7 +180,6 @@ async function getSamlOneByOne(user) {
             });
     });
 }
-// todo running fed id process before saml finishes
 
 function samlAndFedId(userBank) {
     var samlResults = []
@@ -192,6 +193,10 @@ function samlAndFedId(userBank) {
                 userBank.forEach(user => {
                     delete user.password;
                 });
+                fs.writeFile('supportAdmins.json', JSON.stringify(samlResults, null, 2), function (err) {
+                    if (err) return console.log(err);
+                    console.log('updated json with saml info: supportAdmins.json');
+                });
                 removeLogins(userBank);
                 deleteAuth(userBank);
                 return resolve(samlResults)
@@ -204,7 +209,7 @@ function samlAndFedId(userBank) {
             // Write results to json file in same directory
             fs.writeFile('supportAdmins.json', JSON.stringify(res, null, 2), function (err) {
                 if (err) return console.log(err);
-                console.log('written to json here: supportAdmins.json');
+                console.log('final json written here: supportAdmins.json');
             });
         })
     });

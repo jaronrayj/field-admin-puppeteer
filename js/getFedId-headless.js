@@ -114,7 +114,6 @@ async function getFedId(samlResponseArray) {
       }
       user.federatedId = fedId;
       console.log(`Got ${i + 1} Fed Id(s) out of ${samlResponseArray.length}.`);
-      // todo access sf_url for contact and set save through iframe
     }
     console.log("Finished processing Federated IDs");
     console.log(`Setting up Federation ID for any clients that have sf_url`);
