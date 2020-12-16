@@ -188,8 +188,6 @@ function samlAndFedId(userBank) {
                 samlResults.push(result)
             })
             if (samlResults.length === userBank.length) {
-                console.log("🚀 ~ file: main.js ~ line 191 ~ userBank.length", userBank.length)
-                console.log("🚀 ~ file: main.js ~ line 191 ~ samlResults.length", samlResults.length)
                 // remove password field from JSON for security
                 userBank.forEach(user => {
                     delete user.password;

@@ -5,7 +5,7 @@ const randomString = require('../util/randomString');
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
-// module.exports =
+module.exports =
 async function getFedId(samlResponseArray) {
   return new Promise(async (resolve, reject) => {
     'use strict';
@@ -134,14 +134,17 @@ async function getFedId(samlResponseArray) {
           let joinedurl = urlsplit.join(`CommunityNickname%3D${randomString(3)}`)
           await page.goto(`${joinedurl}%26FederationIdentifier%3D${user.federatedId}`);
           await page.waitForNavigation(); // Wait for Navigation
-          await page.waitForTimeout(3000);
+          await page.waitForTimeout(5000);
           // await page.mouse.move(512,411)
           await page.mouse.click(512,367)
           await page.waitForNavigation(); // Wait for Navigation
           // await page.keyboard.press('Enter');
           console.log(`Set up ${user.email} as a field admin here ${user.sf_url}`);
         } catch (error) {
-          console.log(error);
+          if (DEBUG) {
+            console.log(error);
+          }
+          console.log(`${user.email} was not set up successfully, please check here: ${user.sf_url}`);
         }
       } else {
         console.log(`sf_url not provided for ${user.email}`);
@@ -191,4 +194,4 @@ let sampleData = [
   }
 ]
 
-getFedId(sampleData)
+// getFedId(sampleData)
