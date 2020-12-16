@@ -67,5 +67,5 @@ $ yarn start
 
 ### The Goal...
 I do want this to be able to fully run through the field admin setup process. Currenlty will set up users if SF contact url is provided, but will not finish with adding them to the "SF Field Admins" page.
-Not built out to set up a user in SF at this point, but **will** spit out the federated ID by default right now.
+This **will** spit out the federated ID for every user by default right now.
 
