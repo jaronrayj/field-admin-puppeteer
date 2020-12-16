@@ -178,7 +178,7 @@ async function getSamlOneByOne(user) {
             });
     });
 }
-
+// todo running fed id process before saml finishes
 
 function samlAndFedId(userBank) {
     var samlResults = []
