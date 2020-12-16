@@ -1,4 +1,4 @@
 email,domain,full_name,login_id,account_admin,sf_url
 example@example.com,jjohnson.instructure.com,Try This,somethingElse,False,
-test@example.com,jjohnson.instructure.com,Not Jaron,thisistheone2,TRUE,https://instructure.lightning.force.com/lightning/r/Contact/0032G00002VCpCNQA1/view
-example3@example.com,jjohnson.instructure.com,,jokes,FALSE,
+test@example.com,jjohnson.instructure.com,Not Jaron,thisistheone2,TRUE,
+example3@example.com,jjohnson.instructure.com,,jokes,FALSE,https://instructure.lightning.force.com/lightning/r/Contact/0032G00002VCpCNQA1/view
