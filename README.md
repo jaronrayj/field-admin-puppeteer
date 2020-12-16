@@ -8,7 +8,6 @@ If creating a user this process _should_ also send the welcome email to the new 
 
 ## Prereqs
 ### One Time - Download, Install and .env file setup
-<!-- todo process for installing homebrew and node -->
 If Homebrew or NPM have not been installed on your machine, you will have to do that, buckle up, it takes a minute to run. You can install homebrew by pasting this into your terminal
 ```
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
@@ -17,7 +16,7 @@ Once that is done (will likley take awhile) you will need to install node by pas
 ```
 brew install node
 ```
-If you have node/npm already setup you can start here: 
+### If you have node/npm already setup you can start here: 
 Download the file from Github > Code > Download ZIP. Place in location that you won't delete it and unzip it. In the terminal navigate to root folder location such as cd ~/field_admin_puppeteer/
 ```
 $ npm install
