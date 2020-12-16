@@ -74,7 +74,7 @@ let createUserOrLogin = new Promise((resolve, reject) => {
                         } else {
                             console.log("missing email or login_id for user, not creating.");
                         }
-                        user.password = randomString(8)
+                        user.password = randomString()
                         user.instance = instance;
 
                         // Checking to see if they have a saml auth and creating one that will be deleted later if not present
@@ -178,7 +178,7 @@ async function getSamlOneByOne(user) {
             });
     });
 }
-
+// todo running fed id process before saml finishes
 
 function samlAndFedId(userBank) {
     var samlResults = []
@@ -188,6 +188,8 @@ function samlAndFedId(userBank) {
                 samlResults.push(result)
             })
             if (samlResults.length === userBank.length) {
+                console.log("🚀 ~ file: main.js ~ line 191 ~ userBank.length", userBank.length)
+                console.log("🚀 ~ file: main.js ~ line 191 ~ samlResults.length", samlResults.length)
                 // remove password field from JSON for security
                 userBank.forEach(user => {
                     delete user.password;
