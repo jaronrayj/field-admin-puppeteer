@@ -19,7 +19,7 @@ async function getFedId(samlResponseArray) {
     const result2 = []; // Leaving result there in case we need to debug the first page opening later
     const samlSFvalidate = "https://instructure.my.salesforce.com/setup/secur/SAMLValidationPage.apexp?ssoconfid=0LEA00000004CH2";
     // Debug/testing flags
-    const DEBUG = false; // Write more info to the console
+    const DEBUG = true; // Write more info to the console
     // Load the dev env variables 
     // There's no need to check if .env exists, dotenv will check this for you. 
     // It will show a small warning which can be disabled when using this in production.
@@ -124,8 +124,17 @@ async function getFedId(samlResponseArray) {
           await page.goto(user.sf_url);
           await page.waitForNavigation(); // Wait for Navigation
           await page.waitForTimeout(3000);
+          // running with clicking out of the widget window if it shows up
+          try {
+            await page.click("button[class='slds-button slds-button_icon slds-modal__close closeIcon slds-button_icon-bare slds-button_icon-inverse']")
+            await page.waitForTimeout(2000);
+          } catch (error) {
+            if (DEBUG === true) {
+              console.log(error);
+            }
+          }
           await page.click("button[class='slds-button slds-button_icon-border-filled']")
-          await page.waitForTimeout(500);
+          await page.waitForTimeout(2000);
           await page.click("a[name='EnableCustomerPortal']")
           await page.waitForNavigation(); // Wait for Navigation
           let url = page.url();
@@ -149,7 +158,7 @@ async function getFedId(samlResponseArray) {
         console.log(`sf_url not provided for ${user.email}`);
       }
     }
-    await BROWSER.close();
+    // await BROWSER.close();
 
     return resolve(samlResponseArray);
   })
