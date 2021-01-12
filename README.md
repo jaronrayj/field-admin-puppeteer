@@ -29,7 +29,7 @@ Create a file at the root level (in the folder field_admin_puppeteer) named ".en
 ```
 OKTA_USERNAME=jjohnson
 OKTA_PASSWORD=thisismypassword
-TOKEN=17~32131243413213123 (siteadmin token)
+TOKEN=17~32131243413213123
 ```
 ### CSV File Structure (in no specific order)
 
